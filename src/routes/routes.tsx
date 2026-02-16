@@ -1,4 +1,4 @@
-import MainLayout from "@/layouts/main-layout";
+import MainLayout from "@/layouts/main-layout/main-layout";
 import ClientIndex from "@/modules/clients/pages/client-index";
 import {
   authIndexRoute,
