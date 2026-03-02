@@ -1,4 +1,12 @@
-import { sleep } from "@/lib/utils";
+import {
+  getMe,
+  loginRequest,
+  logoutRequest,
+} from "@/modules/authentication/services/auth-api";
+import type {
+  AuthContext,
+  UserInfo,
+} from "@/modules/authentication/types/user-types";
 import {
   createContext,
   useCallback,
@@ -7,50 +15,46 @@ import {
   useState,
 } from "react";
 
-export interface AuthContext {
-  isAuthenticated: boolean;
-  login: (username: string) => Promise<void>;
-  logout: () => Promise<void>;
-  user: string | null;
-}
-
 const AuthContext = createContext<AuthContext | null>(null);
 
-const key = "tanstack.auth.user";
+const USER_STORAGE_KEY = "sisprenic.user";
 
-function getStoredUser() {
-  return localStorage.getItem(key);
+function getStoredUser(): UserInfo | null {
+  const stored = localStorage.getItem(USER_STORAGE_KEY);
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored) as UserInfo;
+  } catch {
+    return null;
+  }
 }
 
-function setStoredUser(user: string | null) {
+function setStoredUser(user: UserInfo | null): void {
   if (user) {
-    localStorage.setItem(key, user);
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
   } else {
-    localStorage.removeItem(key);
+    localStorage.removeItem(USER_STORAGE_KEY);
   }
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<string | null>(getStoredUser());
-  // const isAuthenticated = !!user;
-  const isAuthenticated = true;
+  const [user, setUser] = useState<UserInfo | null>(getStoredUser);
+  const isAuthenticated = !!user;
 
-  const logout = useCallback(async () => {
-    await sleep(250);
-
-    setStoredUser(null);
-    setUser(null);
+  const login = useCallback(async (email: string, password: string) => {
+    await loginRequest(email, password);
+    const userInfo = await getMe();
+    setUser(userInfo);
+    setStoredUser(userInfo);
   }, []);
 
-  const login = useCallback(async (username: string) => {
-    await sleep(500);
-
-    setStoredUser(username);
-    setUser(username);
+  const logout = useCallback(async () => {
+    setUser(null);
+    setStoredUser(null);
+    await logoutRequest();
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUser(getStoredUser());
   }, []);
 
