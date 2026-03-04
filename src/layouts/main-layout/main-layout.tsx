@@ -13,6 +13,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Outlet } from "@tanstack/react-router";
+import { Suspense } from "react";
 import { AppSidebar } from "./app-sidebar";
 
 const MainLayout = () => {
@@ -43,7 +44,9 @@ const MainLayout = () => {
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <Outlet />
+          <Suspense>
+            <Outlet />
+          </Suspense>
         </div>
       </SidebarInset>
     </SidebarProvider>

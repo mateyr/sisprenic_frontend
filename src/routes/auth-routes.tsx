@@ -1,4 +1,5 @@
 import AuthLayout from "@/layouts/auth-layout";
+import { getDefaultRoute } from "@/lib/menu-utils";
 import LogIn from "@/modules/authentication/pages/login";
 import { rootRoute } from "@/routes/root";
 import { createRoute, redirect } from "@tanstack/react-router";
@@ -8,7 +9,8 @@ export const authRouteLayout = createRoute({
   id: "auth-layout",
   beforeLoad: ({ context }) => {
     if (context.auth.isAuthenticated) {
-      throw redirect({ to: "/clients" });
+      const defaultRoute = getDefaultRoute(context.auth.user.menu);
+      throw redirect({ to: defaultRoute ?? "/" });
     }
   },
   component: AuthLayout,

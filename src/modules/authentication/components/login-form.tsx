@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth";
+import { getDefaultRoute } from "@/lib/menu-utils";
 import { cn, sleep } from "@/lib/utils";
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
@@ -37,12 +38,13 @@ export function LoginForm({
     setIsLoading(true);
 
     try {
-      await auth.login(email, password);
+      const userInfo = await auth.login(email, password);
       await router.invalidate();
       // This is just a hack being used to wait for the auth state to update
       // in a real app, you'd want to use a more robust solution
       await sleep(1);
-      await router.navigate({ to: "/clients" });
+      const defaultRoute = getDefaultRoute(userInfo.menu);
+      await router.navigate({ to: defaultRoute ?? "/" });
     } catch {
       setError("Credenciales incorrectas. Por favor, intenta de nuevo.");
     } finally {
