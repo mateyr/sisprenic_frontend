@@ -12,8 +12,8 @@ export function getAllowedRoutes(menu: MenuItem[]): string[] {
 }
 
 // TODO: Make this function recursive to support deep nested menus
-export function getDefaultRoute(menu: MenuItem[]): string | null {
-  if (menu.length === 0) return null;
+export function getDefaultRoute(menu: MenuItem[]): string {
+  if (menu.length === 0) return "/not-access";
   const first = menu[0];
   return first.subMenus.length > 0 ? first.subMenus[0].route : first.route;
 }

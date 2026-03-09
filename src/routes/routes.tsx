@@ -1,7 +1,6 @@
 import MainLayout from "@/layouts/main-layout/main-layout";
 import { getDefaultRoute, isRouteAllowed } from "@/lib/menu-utils";
 import { pages } from "@/lib/page-registry";
-import NotFound from "@/modules/common/pages/not-found";
 import {
   authIndexRoute,
   authRouteLayout,
@@ -25,7 +24,18 @@ const mainRouteLayout = createRoute({
     }
 
     const menu = context.auth.user?.menu ?? [];
-    if (menu.length > 0 && !isRouteAllowed(menu, location.pathname)) {
+
+    if (menu.length === 0) {
+      const defaultRoute = getDefaultRoute(menu);
+
+      if (location.pathname !== defaultRoute) {
+        throw redirect({ to: defaultRoute });
+      }
+
+      return;
+    }
+
+    if (!isRouteAllowed(menu, location.pathname)) {
       const defaultRoute = getDefaultRoute(menu);
       if (defaultRoute) {
         throw redirect({ to: defaultRoute });
@@ -43,13 +53,7 @@ const pageRoutes = pages.map(({ path, component }) =>
   }),
 );
 
-const notFoundRoute = createRoute({
-  getParentRoute: () => mainRouteLayout,
-  path: "$",
-  component: NotFound,
-});
-
 export const routeTree = rootRoute.addChildren([
   authRouteLayout.addChildren([authIndexRoute, logInRoute]),
-  mainRouteLayout.addChildren([...pageRoutes, notFoundRoute]),
+  mainRouteLayout.addChildren([...pageRoutes]),
 ]);

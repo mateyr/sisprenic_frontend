@@ -44,7 +44,7 @@ export function LoginForm({
       // in a real app, you'd want to use a more robust solution
       await sleep(1);
       const defaultRoute = getDefaultRoute(userInfo.menu);
-      await router.navigate({ to: defaultRoute ?? "/" });
+      await router.navigate({ to: defaultRoute });
     } catch {
       setError("Credenciales incorrectas. Por favor, intenta de nuevo.");
     } finally {
