@@ -14,6 +14,18 @@ export const pages: PageEntry[] = [
     path: "/clients",
     component: lazy(() => import("@/modules/clients/pages/client-index")),
   },
+  {
+    path: "/loans",
+    component: lazy(() => import("@/modules/loans/pages/loan-index")),
+  },
+  {
+    path: "/loans/new",
+    component: lazy(() => import("@/modules/loans/pages/loan-create")),
+  },
+  {
+    path: "/loans/$loanId",
+    component: lazy(() => import("@/modules/loans/pages/loan-detail")),
+  },
 
   // TODO:
   // Replace catch route "$" with notFoundComponent
