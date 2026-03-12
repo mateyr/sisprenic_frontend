@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { IconPlus, IconSearch, IconTrash } from "@tabler/icons-react";
+import { IconEdit, IconPlus, IconSearch, IconTrash } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 
 interface LoanToolbarProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  onEdit: () => void;
   onDelete: () => void;
   hasSelection: boolean;
 }
@@ -13,6 +14,7 @@ interface LoanToolbarProps {
 export function LoanToolbar({
   searchQuery,
   onSearchChange,
+  onEdit,
   onDelete,
   hasSelection,
 }: LoanToolbarProps) {
@@ -33,6 +35,15 @@ export function LoanToolbar({
             <IconPlus className="size-4" />
             Nuevo
           </Link>
+        </Button>
+        <Button
+          onClick={onEdit}
+          variant="outline"
+          size="sm"
+          disabled={!hasSelection}
+        >
+          <IconEdit className="size-4" />
+          Editar
         </Button>
         <Button
           onClick={onDelete}

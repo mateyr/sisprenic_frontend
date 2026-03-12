@@ -44,6 +44,28 @@ export async function createLoan(data: LoanFormData): Promise<Loan> {
   return response.json() as Promise<Loan>;
 }
 
+export async function updateLoan(
+  id: number,
+  data: LoanFormData,
+): Promise<Loan> {
+  const response = await fetch(`${API_BASE_URL}/loans/${id}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ...data,
+      interestRate: data.interestRate / 100,
+      client: null,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Error al actualizar el préstamo.");
+  }
+
+  return response.json() as Promise<Loan>;
+}
+
 export async function deleteLoan(id: number): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/loans/${id}`, {
     method: "DELETE",

@@ -13,12 +13,14 @@ interface ClientTableProps {
   clients: Client[];
   selectedClient: Client | null;
   onSelect: (client: Client | null) => void;
+  onDoubleClick: (client: Client) => void;
 }
 
 export function ClientTable({
   clients,
   selectedClient,
   onSelect,
+  onDoubleClick,
 }: ClientTableProps) {
   if (clients.length === 0) {
     return (
@@ -49,6 +51,7 @@ export function ClientTable({
                 data-state={isSelected ? "selected" : undefined}
                 className="cursor-pointer"
                 onClick={() => onSelect(isSelected ? null : client)}
+                onDoubleClick={() => onDoubleClick(client)}
               >
                 <TableCell className="font-medium">
                   {getFullName(client)}

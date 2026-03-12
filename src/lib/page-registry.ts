@@ -15,6 +15,10 @@ export const pages: PageEntry[] = [
     component: lazy(() => import("@/modules/clients/pages/client-index")),
   },
   {
+    path: "/clients/$clientId",
+    component: lazy(() => import("@/modules/clients/pages/client-detail")),
+  },
+  {
     path: "/loans",
     component: lazy(() => import("@/modules/loans/pages/loan-index")),
   },
@@ -25,6 +29,10 @@ export const pages: PageEntry[] = [
   {
     path: "/loans/$loanId",
     component: lazy(() => import("@/modules/loans/pages/loan-detail")),
+  },
+  {
+    path: "/loans/$loanId/edit",
+    component: lazy(() => import("@/modules/loans/pages/loan-edit")),
   },
 
   // TODO:

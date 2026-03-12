@@ -55,6 +55,9 @@ export default function LoanIndex() {
       <LoanToolbar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        onEdit={() => {
+          if (selectedLoan) navigate({ to: `/loans/${selectedLoan.id}/edit` });
+        }}
         onDelete={() => setIsDeleteOpen(true)}
         hasSelection={!!selectedLoan}
       />

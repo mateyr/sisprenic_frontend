@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ClientDeleteDialog } from "../components/client-delete-dialog";
 import { ClientFormDialog } from "../components/client-form-dialog";
@@ -15,6 +16,7 @@ import { getFullName } from "../types/client-types";
 
 export default function ClientIndex() {
   const { clients, isLoading, error, refetch } = useClients();
+  const navigate = useNavigate();
 
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -84,6 +86,9 @@ export default function ClientIndex() {
           clients={filteredClients}
           selectedClient={selectedClient}
           onSelect={setSelectedClient}
+          onDoubleClick={(client) =>
+            navigate({ to: `/clients/${client.id}` })
+          }
         />
       )}
 

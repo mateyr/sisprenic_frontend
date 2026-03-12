@@ -15,7 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getFullName } from "@/modules/clients/types/client-types";
-import { IconArrowLeft } from "@tabler/icons-react";
+import { IconArrowLeft, IconEdit } from "@tabler/icons-react";
 import { Link, useParams } from "@tanstack/react-router";
 import { useLoan } from "../hooks/use-loan";
 import { formatCurrency, formatDate, formatPercent } from "@/lib/formats";
@@ -68,6 +68,14 @@ export default function LoanDetail() {
         <h1 className="text-2xl font-semibold tracking-tight">
           Detalle del Préstamo
         </h1>
+        <div className="ml-auto">
+          <Button asChild size="sm">
+            <Link to={`/loans/${id}/edit`}>
+              <IconEdit className="size-4" />
+              Editar
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

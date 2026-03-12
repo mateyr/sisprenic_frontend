@@ -21,6 +21,18 @@ export type Client = {
   phoneNumber: string;
 };
 
+export type ClientLoan = {
+  id: number;
+  principal: number;
+  interestRate: number;
+  termMonths: number;
+  startDate: string;
+};
+
+export type ClientDetail = Client & {
+  loans: ClientLoan[];
+};
+
 export function getFullName(client: Client): string {
   return [
     client.firstName,

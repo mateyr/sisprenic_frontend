@@ -1,4 +1,4 @@
-import type { Client, ClientFormData } from "../types/client-types";
+import type { Client, ClientDetail, ClientFormData } from "../types/client-types";
 
 const API_BASE_URL = "http://localhost:5162";
 
@@ -24,6 +24,18 @@ export async function getClient(id: number): Promise<Client> {
   }
 
   return response.json() as Promise<Client>;
+}
+
+export async function getClientDetail(id: number): Promise<ClientDetail> {
+  const response = await fetch(`${API_BASE_URL}/clients/${id}`, {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Error al obtener el cliente.");
+  }
+
+  return response.json() as Promise<ClientDetail>;
 }
 
 export async function createClient(data: ClientFormData): Promise<Client> {
