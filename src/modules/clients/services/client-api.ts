@@ -56,7 +56,7 @@ export async function createClient(data: ClientFormData): Promise<Client> {
 export async function updateClient(
   id: number,
   data: ClientFormData,
-): Promise<Client> {
+): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/clients/${id}`, {
     method: "PUT",
     credentials: "include",
@@ -67,8 +67,6 @@ export async function updateClient(
   if (!response.ok) {
     throw new Error("Error al actualizar el cliente.");
   }
-
-  return response.json() as Promise<Client>;
 }
 
 export async function deleteClient(id: number): Promise<void> {

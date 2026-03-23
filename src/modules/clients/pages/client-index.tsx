@@ -1,6 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { clientColumns } from "@/modules/clients/types/client-table-types";
+import type { RowSelectionState } from "@tanstack/react-table";
+import { useState } from "react";
 import { ClientDeleteDialog } from "../components/client-delete-dialog";
 import { ClientFormDialog } from "../components/client-form-dialog";
 import { ClientTable } from "../components/client-table";
@@ -11,29 +12,31 @@ import {
   deleteClient,
   updateClient,
 } from "../services/client-api";
-import type { Client, ClientFormData } from "../types/client-types";
+import type { ClientFormData } from "../types/client-types";
 import { getFullName } from "../types/client-types";
 
 export default function ClientIndex() {
   const { clients, isLoading, error, refetch } = useClients();
-  const navigate = useNavigate();
 
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-  const filteredClients = useMemo(() => {
-    if (!searchQuery.trim()) return clients;
-    const query = searchQuery.toLowerCase();
-    return clients.filter(
-      (client) =>
-        getFullName(client).toLowerCase().includes(query) ||
-        client.identification.toLowerCase().includes(query) ||
-        client.phoneNumber.includes(query),
-    );
-  }, [clients, searchQuery]);
+  const selectedIds = Object.keys(rowSelection);
+  const selectedClient =
+    selectedIds.length === 1
+      ? clients.find(client => client.id === Number(selectedIds[0]))
+      : undefined;
+
+  const canEdit = selectedIds.length === 1;
+  const canDelete = selectedIds.length >= 1;
+
+  const deleteLabel =
+    selectedIds.length === 1 && selectedClient
+      ? getFullName(selectedClient)
+      : `${selectedIds.length} clientes`;
 
   async function handleCreate(data: ClientFormData) {
     await createClient(data);
@@ -45,15 +48,18 @@ export default function ClientIndex() {
     if (!selectedClient) return;
     await updateClient(selectedClient.id, data);
     await refetch();
-    setSelectedClient(null);
+    setRowSelection({});
     setIsEditOpen(false);
   }
 
+  // TODO: Implement bulk delete endpoint for multiple clients
   async function handleDelete() {
-    if (!selectedClient) return;
-    await deleteClient(selectedClient.id);
+    if (selectedIds.length === 0) return;
+    for (const id of selectedIds) {
+      await deleteClient(Number(id));
+    }
     await refetch();
-    setSelectedClient(null);
+    setRowSelection({});
     setIsDeleteOpen(false);
   }
 
@@ -67,7 +73,8 @@ export default function ClientIndex() {
         onNew={() => setIsCreateOpen(true)}
         onEdit={() => setIsEditOpen(true)}
         onDelete={() => setIsDeleteOpen(true)}
-        hasSelection={!!selectedClient}
+        canEdit={canEdit}
+        canDelete={canDelete}
       />
 
       {isLoading ? (
@@ -83,12 +90,10 @@ export default function ClientIndex() {
         </div>
       ) : (
         <ClientTable
-          clients={filteredClients}
-          selectedClient={selectedClient}
-          onSelect={setSelectedClient}
-          onDoubleClick={(client) =>
-            navigate({ to: `/clients/${client.id}` })
-          }
+          columns={clientColumns}
+          data={clients}
+          rowSelection={rowSelection}
+          onRowSelectionChange={setRowSelection}
         />
       )}
 
@@ -101,26 +106,26 @@ export default function ClientIndex() {
       />
 
       <ClientFormDialog
-        key={selectedClient?.id}
+        key={selectedIds[0]}
         open={isEditOpen}
         onOpenChange={(open) => {
           setIsEditOpen(open);
-          if (!open) setSelectedClient(null);
+          if (!open) setRowSelection({});
         }}
         onSubmit={handleEdit}
         title="Editar cliente"
         description="Modifica los datos del cliente seleccionado."
-        defaultValues={selectedClient}
+        defaultValues={selectedClient ?? null}
       />
 
       <ClientDeleteDialog
         open={isDeleteOpen}
         onOpenChange={(open) => {
           setIsDeleteOpen(open);
-          if (!open) setSelectedClient(null);
+          if (!open) setRowSelection({});
         }}
         onConfirm={handleDelete}
-        clientName={selectedClient ? getFullName(selectedClient) : ""}
+        clientName={deleteLabel}
       />
     </div>
   );

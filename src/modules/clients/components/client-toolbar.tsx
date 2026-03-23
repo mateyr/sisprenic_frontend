@@ -8,7 +8,8 @@ interface ClientToolbarProps {
   onNew: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  hasSelection: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
 }
 
 export function ClientToolbar({
@@ -17,7 +18,8 @@ export function ClientToolbar({
   onNew,
   onEdit,
   onDelete,
-  hasSelection,
+  canEdit,
+  canDelete,
 }: ClientToolbarProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -39,7 +41,7 @@ export function ClientToolbar({
           onClick={onEdit}
           variant="outline"
           size="sm"
-          disabled={!hasSelection}
+          disabled={!canEdit}
         >
           <IconPencil className="size-4" />
           Editar
@@ -48,7 +50,7 @@ export function ClientToolbar({
           onClick={onDelete}
           variant="outline"
           size="sm"
-          disabled={!hasSelection}
+          disabled={!canDelete}
         >
           <IconTrash className="size-4" />
           Eliminar

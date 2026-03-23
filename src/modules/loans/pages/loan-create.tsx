@@ -1,18 +1,18 @@
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClients } from "@/modules/clients/hooks/use-clients";
 import { getFullName } from "@/modules/clients/types/client-types";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { useForm } from "@tanstack/react-form";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 import { LoanSummary } from "../components/loan-summary";
 import { createLoan } from "../services/loan-api";
@@ -20,12 +20,13 @@ import { loanFormSchema } from "../types/loan-types";
 
 export default function LoanCreate() {
   const navigate = useNavigate();
+  const search = useSearch({ strict: false });
   const { clients, isLoading: clientsLoading } = useClients();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm({
     defaultValues: {
-      clientId: 0,
+      clientId: search.clientId ?? 0,
       principal: 0,
       interestRate: 0,
       termMonths: 0,
@@ -47,7 +48,7 @@ export default function LoanCreate() {
     },
   });
 
-  // TODO: Improve UI for Volver and Detalle préstamo buttons 
+  // TODO: Improve UI for Volver and Detalle préstamo buttons
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-4">

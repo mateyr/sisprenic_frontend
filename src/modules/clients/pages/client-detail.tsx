@@ -1,10 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -16,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency, formatDate, formatPercent } from "@/lib/formats";
-import { IconArrowLeft } from "@tabler/icons-react";
+import { IconArrowLeft, IconPlus } from "@tabler/icons-react";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useClientDetail } from "../hooks/use-client-detail";
@@ -71,16 +66,23 @@ export default function ClientDetail() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-4">
-        <Button asChild variant="ghost" size="sm">
-          <Link to="/clients">
-            <IconArrowLeft className="size-4" />
-            Volver
-          </Link>
+      <div className="flex items-center justify-between border-b border-solid py-3">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl font-semibold">{getFullName(client)}</h1>
+
+          <p className="text-sm text-muted-foreground">
+            {client.identification}
+          </p>
+        </div>
+
+        <Button
+          onClick={() =>
+            navigate({ to: "/loans/new", search: { clientId: client.id } })
+          }
+        >
+          <IconPlus className="size-4 mr-2" />
+          Nuevo Préstamo
         </Button>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {getFullName(client)}
-        </h1>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -91,7 +93,10 @@ export default function ClientDetail() {
           <CardContent>
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <InfoRow label="Primer Nombre" value={client.firstName} />
-              <InfoRow label="Segundo Nombre" value={client.secondName || "—"} />
+              <InfoRow
+                label="Segundo Nombre"
+                value={client.secondName || "—"}
+              />
               <InfoRow label="Primer Apellido" value={client.lastName} />
               <InfoRow
                 label="Segundo Apellido"
