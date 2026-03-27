@@ -1,5 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Client } from "@/modules/clients/types/client-types";
+import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 
 export const clientColumns: ColumnDef<Client>[] = [
@@ -34,6 +35,11 @@ export const clientColumns: ColumnDef<Client>[] = [
     header: "Nombre completo",
     accessorFn: (row) =>
       `${row.firstName} ${row.secondName ?? ""} ${row.lastName} ${row.secondLastName ?? ""}`,
+    cell: ({ row, getValue }) => (
+      <Link to={`/clients/${row.original.id}`} className="text-blue-600">
+        {getValue<string>()}
+      </Link>
+    ),
   },
   {
     accessorKey: "identification",
