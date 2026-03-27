@@ -1,5 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency } from "@/lib/formats";
 import { getFullName } from "@/modules/clients/types/client-types";
+import type { RowSelectionState } from "@tanstack/react-table";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { LoanDeleteDialog } from "../components/loan-delete-dialog";
@@ -7,15 +9,32 @@ import { LoanTable } from "../components/loan-table";
 import { LoanToolbar } from "../components/loan-toolbar";
 import { useLoans } from "../hooks/use-loans";
 import { deleteLoan } from "../services/loan-api";
-import type { Loan } from "../types/loan-types";
 
 export default function LoanIndex() {
   const { loans, isLoading, error, refetch } = useLoans();
   const navigate = useNavigate();
 
-  const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  const selectedIds = Object.keys(rowSelection);
+  const selectedLoan =
+    selectedIds.length === 1
+      ? loans.find((l) => l.id === Number(selectedIds[0]))
+      : undefined;
+
+  const canEdit = selectedIds.length === 1;
+  const canDelete = selectedIds.length >= 1;
+
+  const deleteLabel =
+    selectedIds.length === 1 && selectedLoan
+      ? `el préstamo de ${formatCurrency(selectedLoan.principal)} del cliente ${
+          selectedLoan.client
+            ? getFullName(selectedLoan.client)
+            : `#${selectedLoan.clientId}`
+        }`
+      : `${selectedIds.length} préstamos`;
 
   const filteredLoans = useMemo(() => {
     if (!searchQuery.trim()) return loans;
@@ -32,21 +51,20 @@ export default function LoanIndex() {
     });
   }, [loans, searchQuery]);
 
-  async function handleDelete() {
+  function handleEdit() {
     if (!selectedLoan) return;
-    await deleteLoan(selectedLoan.id);
+    navigate({ to: "/loans/$loanId/edit", params: { loanId: String(selectedLoan.id) } });
+  }
+
+  async function handleDelete() {
+    if (selectedIds.length === 0) return;
+    for (const id of selectedIds) {
+      await deleteLoan(Number(id));
+    }
     await refetch();
-    setSelectedLoan(null);
+    setRowSelection({});
     setIsDeleteOpen(false);
   }
-
-  function handleDoubleClick(loan: Loan) {
-    navigate({ to: `/loans/${loan.id}` });
-  }
-
-  const selectedClientName = selectedLoan?.client
-    ? getFullName(selectedLoan.client)
-    : `Cliente #${selectedLoan?.clientId ?? ""}`;
 
   return (
     <div className="flex flex-col gap-4">
@@ -55,11 +73,10 @@ export default function LoanIndex() {
       <LoanToolbar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        onEdit={() => {
-          if (selectedLoan) navigate({ to: `/loans/${selectedLoan.id}/edit` });
-        }}
+        onEdit={handleEdit}
         onDelete={() => setIsDeleteOpen(true)}
-        hasSelection={!!selectedLoan}
+        canEdit={canEdit}
+        canDelete={canDelete}
       />
 
       {isLoading ? (
@@ -76,9 +93,8 @@ export default function LoanIndex() {
       ) : (
         <LoanTable
           loans={filteredLoans}
-          selectedLoan={selectedLoan}
-          onSelect={setSelectedLoan}
-          onDoubleClick={handleDoubleClick}
+          rowSelection={rowSelection}
+          onRowSelectionChange={setRowSelection}
         />
       )}
 
@@ -86,11 +102,10 @@ export default function LoanIndex() {
         open={isDeleteOpen}
         onOpenChange={(open) => {
           setIsDeleteOpen(open);
-          if (!open) setSelectedLoan(null);
+          if (!open) setRowSelection({});
         }}
         onConfirm={handleDelete}
-        loanPrincipal={selectedLoan?.principal ?? 0}
-        clientName={selectedClientName}
+        deleteLabel={deleteLabel}
       />
     </div>
   );

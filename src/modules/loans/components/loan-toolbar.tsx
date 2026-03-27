@@ -8,7 +8,8 @@ interface LoanToolbarProps {
   onSearchChange: (query: string) => void;
   onEdit: () => void;
   onDelete: () => void;
-  hasSelection: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
 }
 
 export function LoanToolbar({
@@ -16,7 +17,8 @@ export function LoanToolbar({
   onSearchChange,
   onEdit,
   onDelete,
-  hasSelection,
+  canEdit,
+  canDelete,
 }: LoanToolbarProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -40,7 +42,7 @@ export function LoanToolbar({
           onClick={onEdit}
           variant="outline"
           size="sm"
-          disabled={!hasSelection}
+          disabled={!canEdit}
         >
           <IconEdit className="size-4" />
           Editar
@@ -49,7 +51,7 @@ export function LoanToolbar({
           onClick={onDelete}
           variant="outline"
           size="sm"
-          disabled={!hasSelection}
+          disabled={!canDelete}
         >
           <IconTrash className="size-4" />
           Eliminar

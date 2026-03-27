@@ -8,23 +8,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { formatCurrency } from "@/lib/formats";
 import { useState } from "react";
 
 interface LoanDeleteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => Promise<void>;
-  loanPrincipal: number;
-  clientName: string;
+  deleteLabel: string;
 }
 
 export function LoanDeleteDialog({
   open,
   onOpenChange,
   onConfirm,
-  loanPrincipal,
-  clientName,
+  deleteLabel,
 }: LoanDeleteDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -43,9 +40,8 @@ export function LoanDeleteDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>¿Eliminar préstamo?</AlertDialogTitle>
           <AlertDialogDescription>
-            Estás a punto de eliminar el préstamo de{" "}
-            <strong>{formatCurrency(loanPrincipal)}</strong> del cliente{" "}
-            <strong>{clientName}</strong>. Esta acción no se puede deshacer.
+            Estás a punto de eliminar <strong>{deleteLabel}</strong>. Esta
+            acción no se puede deshacer.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
