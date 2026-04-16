@@ -7,14 +7,8 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { getFullName } from "@/modules/clients/types/client-types";
+import { LoanPaymentsSection } from "@/modules/payments/components/loan-payments-section";
 import { IconArrowLeft, IconEdit } from "@tabler/icons-react";
 import { Link, useParams } from "@tanstack/react-router";
 import { useLoan } from "../hooks/use-loan";
@@ -133,30 +127,7 @@ export default function LoanDetail() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Pagos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead className="text-right">Monto del Pago</TableHead>
-                  <TableHead className="text-right">Capital</TableHead>
-                  <TableHead className="text-right">Interés</TableHead>
-                  <TableHead className="text-right">Saldo Restante</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody />
-            </Table>
-          </div>
-          <p className="text-muted-foreground mt-4 text-center text-sm">
-            Aún no se han registrado pagos para este préstamo.
-          </p>
-        </CardContent>
-      </Card>
+      <LoanPaymentsSection loan={loan} />
     </div>
   );
 }
