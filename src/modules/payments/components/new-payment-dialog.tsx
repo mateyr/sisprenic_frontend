@@ -208,8 +208,8 @@ export function NewPaymentDialog({
                     onChange={(e) => field.handleChange(e.target.value)}
                     placeholder="Observaciones del pago..."
                     className={cn(
-                      "placeholder:text-muted-foreground dark:bg-input/30 border-input w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none",
-                      "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+                      "placeholder:text-muted-foreground dark:bg-input/30 border-input w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow,border-color] duration-150 outline-none",
+                      "focus-visible:border-primary focus-visible:ring-primary/15 focus-visible:ring-[3px]",
                       "disabled:pointer-events-none disabled:opacity-50 resize-none",
                     )}
                   />

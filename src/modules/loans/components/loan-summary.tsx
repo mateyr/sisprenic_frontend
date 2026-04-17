@@ -65,7 +65,7 @@ function SummaryRow({
   return (
     <div className="flex items-center justify-between">
       <span className="text-muted-foreground text-sm">{label}</span>
-      <span className={highlight ? "text-lg font-semibold" : "font-medium"}>
+      <span className={highlight ? "text-lg font-semibold text-primary" : "font-medium"}>
         {value}
       </span>
     </div>

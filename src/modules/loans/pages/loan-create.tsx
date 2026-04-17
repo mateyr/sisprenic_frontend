@@ -103,7 +103,7 @@ export default function LoanCreate() {
                               field.handleChange(Number(e.target.value))
                             }
                             aria-invalid={isInvalid}
-                            className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50"
+                            className="border-input bg-transparent flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs transition-[border-color,box-shadow] duration-150 focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/15 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             <option value={0}>Seleccionar cliente...</option>
                             {clients.map((client) => (

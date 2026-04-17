@@ -89,7 +89,9 @@ export default function Dashboard() {
                 <CardTitle className="text-muted-foreground text-sm font-medium">
                   {card.label}
                 </CardTitle>
-                <card.icon className="text-muted-foreground size-5" />
+                <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
+                  <card.icon className="text-primary size-5" />
+                </div>
               </div>
             </CardHeader>
             <CardContent>
