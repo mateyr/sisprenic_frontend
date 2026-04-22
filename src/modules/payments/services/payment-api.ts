@@ -14,6 +14,18 @@ export async function getPayments(): Promise<Payment[]> {
   return response.json() as Promise<Payment[]>;
 }
 
+export async function getLoanPayments(loanId: number): Promise<Payment[]> {
+  const response = await fetch(`${API_BASE_URL}/loans/${loanId}/payments`, {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Error al obtener los pagos.");
+  }
+
+  return response.json() as Promise<Payment[]>;
+}
+
 export async function createPayment(
   data: PaymentFormData & { loanId: number },
 ): Promise<Payment> {

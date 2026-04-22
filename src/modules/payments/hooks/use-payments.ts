@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { getPayments } from "../services/payment-api";
+import { getPayments, getLoanPayments } from "../services/payment-api";
 import type { Payment } from "../types/payment-types";
 
 export function usePayments(loanId?: number) {
@@ -11,10 +11,9 @@ export function usePayments(loanId?: number) {
     setIsLoading(true);
     setError(null);
     try {
-      const all = await getPayments();
-      const filtered =
-        loanId !== undefined ? all.filter((p) => p.loanId === loanId) : all;
-      setPayments(filtered);
+      const data = 
+        loanId !== undefined ? await getLoanPayments(loanId) : await getPayments();
+      setPayments(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
