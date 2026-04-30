@@ -1,6 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { clientColumns } from "@/modules/clients/types/client-table-types";
 import type { RowSelectionState } from "@tanstack/react-table";
+import { toast } from "sonner";
 import { useState } from "react";
 import { ClientDeleteDialog } from "../components/client-delete-dialog";
 import { ClientFormDialog } from "../components/client-form-dialog";
@@ -27,7 +28,7 @@ export default function ClientIndex() {
   const selectedIds = Object.keys(rowSelection);
   const selectedClient =
     selectedIds.length === 1
-      ? clients.find(client => client.id === Number(selectedIds[0]))
+      ? clients.find((client) => client.id === Number(selectedIds[0]))
       : undefined;
 
   const canEdit = selectedIds.length === 1;
@@ -38,18 +39,44 @@ export default function ClientIndex() {
       ? getFullName(selectedClient)
       : `${selectedIds.length} clientes`;
 
+  const successToastStyle: React.CSSProperties = {
+    background: "color-mix(in srgb, var(--primary) 10%, white)",
+    color: "var(--primary)",
+    border: "1px solid color-mix(in srgb, var(--primary) 35%, transparent)",
+  };
+
   async function handleCreate(data: ClientFormData) {
-    await createClient(data);
-    await refetch();
-    setIsCreateOpen(false);
+    try {
+      await createClient(data);
+      await refetch();
+      setIsCreateOpen(false);
+      toast.success("Cliente creado exitosamente.", {
+        style: successToastStyle
+      });
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Error al crear el cliente.",
+      );
+      throw err;
+    }
   }
 
   async function handleEdit(data: ClientFormData) {
     if (!selectedClient) return;
-    await updateClient(selectedClient.id, data);
-    await refetch();
-    setRowSelection({});
-    setIsEditOpen(false);
+    try {
+      await updateClient(selectedClient.id, data);
+      await refetch();
+      setRowSelection({});
+      setIsEditOpen(false);
+      toast.success("Cliente actualizado exitosamente.", {
+        style: successToastStyle,
+      });
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Error al actualizar el cliente.",
+      );
+      throw err;
+    }
   }
 
   // TODO: Implement bulk delete endpoint for multiple clients

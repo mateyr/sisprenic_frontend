@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/sonner";
 import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
@@ -30,6 +31,7 @@ const MainLayout = () => {
           </Suspense>
         </div>
       </SidebarInset>
+      <Toaster position="top-right" />
     </SidebarProvider>
   );
 };
