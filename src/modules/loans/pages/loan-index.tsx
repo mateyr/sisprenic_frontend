@@ -4,6 +4,7 @@ import { getFullName } from "@/modules/clients/types/client-types";
 import type { RowSelectionState } from "@tanstack/react-table";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { LoanDeleteDialog } from "../components/loan-delete-dialog";
 import { LoanTable } from "../components/loan-table";
 import { LoanToolbar } from "../components/loan-toolbar";
@@ -58,12 +59,24 @@ export default function LoanIndex() {
 
   async function handleDelete() {
     if (selectedIds.length === 0) return;
-    for (const id of selectedIds) {
-      await deleteLoan(Number(id));
+    try {
+      for (const id of selectedIds) {
+        await deleteLoan(Number(id));
+      }
+      await refetch();
+      setRowSelection({});
+      setIsDeleteOpen(false);
+      toast.success(
+        selectedIds.length === 1
+          ? "Préstamo eliminado exitosamente."
+          : `${selectedIds.length} préstamos eliminados exitosamente.`,
+      );
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Error al eliminar el préstamo.",
+      );
+      throw err;
     }
-    await refetch();
-    setRowSelection({});
-    setIsDeleteOpen(false);
   }
 
   return (

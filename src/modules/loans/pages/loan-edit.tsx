@@ -14,6 +14,7 @@ import { IconArrowLeft } from "@tabler/icons-react";
 import { useForm } from "@tanstack/react-form";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
+import { toast } from "sonner";
 import { LoanSummary } from "../components/loan-summary";
 import { useLoan } from "../hooks/use-loan";
 import { updateLoan } from "../services/loan-api";
@@ -99,11 +100,15 @@ function LoanEditForm({
       onSubmitError(null);
       try {
         await updateLoan(loan.id, value);
+        toast.success("Préstamo actualizado exitosamente.");
         onSuccess();
       } catch (err) {
-        onSubmitError(
-          err instanceof Error ? err.message : "Ocurrió un error inesperado.",
-        );
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Error al actualizar el préstamo.";
+        onSubmitError(message);
+        toast.error(message);
       }
     },
   });

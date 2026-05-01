@@ -39,20 +39,12 @@ export default function ClientIndex() {
       ? getFullName(selectedClient)
       : `${selectedIds.length} clientes`;
 
-  const successToastStyle: React.CSSProperties = {
-    background: "color-mix(in srgb, var(--primary) 10%, white)",
-    color: "var(--primary)",
-    border: "1px solid color-mix(in srgb, var(--primary) 35%, transparent)",
-  };
-
   async function handleCreate(data: ClientFormData) {
     try {
       await createClient(data);
       await refetch();
       setIsCreateOpen(false);
-      toast.success("Cliente creado exitosamente.", {
-        style: successToastStyle
-      });
+      toast.success("Cliente creado exitosamente.");
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Error al crear el cliente.",
@@ -68,9 +60,7 @@ export default function ClientIndex() {
       await refetch();
       setRowSelection({});
       setIsEditOpen(false);
-      toast.success("Cliente actualizado exitosamente.", {
-        style: successToastStyle,
-      });
+      toast.success("Cliente actualizado exitosamente.");
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Error al actualizar el cliente.",
@@ -82,12 +72,24 @@ export default function ClientIndex() {
   // TODO: Implement bulk delete endpoint for multiple clients
   async function handleDelete() {
     if (selectedIds.length === 0) return;
-    for (const id of selectedIds) {
-      await deleteClient(Number(id));
+    try {
+      for (const id of selectedIds) {
+        await deleteClient(Number(id));
+      }
+      await refetch();
+      setRowSelection({});
+      setIsDeleteOpen(false);
+      toast.success(
+        selectedIds.length === 1
+          ? "Cliente eliminado exitosamente."
+          : `${selectedIds.length} clientes eliminados exitosamente.`,
+      );
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Error al eliminar el cliente.",
+      );
+      throw err;
     }
-    await refetch();
-    setRowSelection({});
-    setIsDeleteOpen(false);
   }
 
   return (

@@ -14,6 +14,7 @@ import { IconArrowLeft } from "@tabler/icons-react";
 import { useForm } from "@tanstack/react-form";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
+import { toast } from "sonner";
 import { LoanSummary } from "../components/loan-summary";
 import { createLoan } from "../services/loan-api";
 import { loanFormSchema } from "../types/loan-types";
@@ -39,11 +40,13 @@ export default function LoanCreate() {
       setSubmitError(null);
       try {
         await createLoan(value);
+        toast.success("Préstamo creado exitosamente.");
         navigate({ to: "/loans" });
       } catch (err) {
-        setSubmitError(
-          err instanceof Error ? err.message : "Ocurrió un error inesperado.",
-        );
+        const message =
+          err instanceof Error ? err.message : "Error al crear el préstamo.";
+        setSubmitError(message);
+        toast.error(message);
       }
     },
   });

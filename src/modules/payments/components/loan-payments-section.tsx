@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { IconPlus } from "@tabler/icons-react";
+import { toast } from "sonner";
 import { formatCurrency, formatDate } from "@/lib/formats";
 import type { Loan } from "@/modules/loans/types/loan-types";
 import { usePayments } from "../hooks/use-payments";
@@ -27,9 +28,17 @@ export function LoanPaymentsSection({ loan }: LoanPaymentsSectionProps) {
   const { payments, isLoading, error, refresh } = usePayments(loan.id);
 
   async function handleCreatePayment(data: PaymentFormData) {
-    await createPayment({ ...data, loanId: loan.id });
-    await refresh();
-    setDialogOpen(false);
+    try {
+      await createPayment({ ...data, loanId: loan.id });
+      await refresh();
+      setDialogOpen(false);
+      toast.success("Pago registrado exitosamente.");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Error al registrar el pago.",
+      );
+      throw err;
+    }
   }
 
   return (
