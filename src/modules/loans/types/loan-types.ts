@@ -7,9 +7,16 @@ export type Loan = {
   interestRate: number;
   termMonths: number;
   startDate: string;
-  clientId: number;
-  client?: Client;
+  client: Client;
+  summary: LoanSummary;
 };
+
+type LoanSummary = {
+  principalCurrent:   number;
+  interestThisPeriod: number;
+  interestPending:    number;
+  nextPaymentDate:    Date;
+}
 
 export const loanFormSchema = z.object({
   clientId: z.number().min(1, "Debe seleccionar un cliente"),

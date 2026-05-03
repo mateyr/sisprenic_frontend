@@ -33,7 +33,7 @@ function getTodayString() {
 }
 
 function getSuggestedInterest(loan: Loan) {
-  return parseFloat((loan.principal * loan.interestRate).toFixed(2));
+  return parseFloat((loan.summary.interestPending + loan.summary.interestThisPeriod).toFixed(2));
 }
 
 export function NewPaymentDialog({
