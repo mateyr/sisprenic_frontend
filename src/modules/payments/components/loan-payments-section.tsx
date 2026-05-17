@@ -14,8 +14,7 @@ import { IconPlus } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { formatCurrency, formatDate } from "@/lib/formats";
 import type { Loan } from "@/modules/loans/types/loan-types";
-import { usePayments } from "../hooks/use-payments";
-import { createPayment } from "../services/payment-api";
+import { useCreatePayment, usePayments } from "../hooks/use-payments";
 import type { PaymentFormData } from "../types/payment-types";
 import { NewPaymentDialog } from "./new-payment-dialog";
 
@@ -25,12 +24,12 @@ interface LoanPaymentsSectionProps {
 
 export function LoanPaymentsSection({ loan }: LoanPaymentsSectionProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { payments, isLoading, error, refresh } = usePayments(loan.id);
+  const { payments, isLoading, error } = usePayments(loan.id);
+  const createPaymentMutation = useCreatePayment(loan.id);
 
   async function handleCreatePayment(data: PaymentFormData) {
     try {
-      await createPayment({ ...data, loanId: loan.id });
-      await refresh();
+      await createPaymentMutation.mutateAsync(data);
       setDialogOpen(false);
       toast.success("Pago registrado exitosamente.");
     } catch (err) {

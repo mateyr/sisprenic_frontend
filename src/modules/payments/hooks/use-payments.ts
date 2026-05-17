@@ -1,29 +1,36 @@
-import { useCallback, useEffect, useState } from "react";
-import { getPayments, getLoanPayments } from "../services/payment-api";
-import type { Payment } from "../types/payment-types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
+import {
+  createPayment,
+  getLoanPayments,
+  getPayments,
+} from "../services/payment-api";
+import type { PaymentFormData } from "../types/payment-types";
 
 export function usePayments(loanId?: number) {
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error } = useQuery({
+    queryKey:
+      loanId !== undefined
+        ? queryKeys.loans.payments(loanId)
+        : queryKeys.payments.all(),
+    queryFn: () =>
+      loanId !== undefined ? getLoanPayments(loanId) : getPayments(),
+  });
 
-  const fetchPayments = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = 
-        loanId !== undefined ? await getLoanPayments(loanId) : await getPayments();
-      setPayments(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [loanId]);
+  return {
+    payments: data ?? [],
+    isLoading,
+    error: error instanceof Error ? error.message : error ? "Error desconocido" : null,
+  };
+}
 
-  useEffect(() => {
-    fetchPayments();
-  }, [fetchPayments]);
+export function useCreatePayment(loanId: number) {
+  const queryClient = useQueryClient();
 
-  return { payments, isLoading, error, refresh: fetchPayments };
+  return useMutation({
+    mutationFn: (data: PaymentFormData) => createPayment({ ...data, loanId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.loans.detail(loanId) });
+    },
+  });
 }
