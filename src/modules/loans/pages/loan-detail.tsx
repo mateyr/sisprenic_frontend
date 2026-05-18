@@ -1,23 +1,25 @@
+import { Alert, AlertAction, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency, formatDate, formatPercent } from "@/lib/formats";
 import { getFullName } from "@/modules/clients/types/client-types";
 import { LoanPaymentsSection } from "@/modules/payments/components/loan-payments-section";
-import { IconArrowLeft, IconEdit } from "@tabler/icons-react";
+import type { ApiMessage } from "@/types/api-response-type";
+import { IconArrowLeft, IconEdit, IconX } from "@tabler/icons-react";
 import { Link, useParams } from "@tanstack/react-router";
+import { InfoIcon } from "lucide-react";
+import { useState } from "react";
 import { useLoan } from "../hooks/use-loan";
-import { formatCurrency, formatDate, formatPercent } from "@/lib/formats";
 
 export default function LoanDetail() {
   const { loanId } = useParams({ strict: false }) as { loanId: string };
   const id = Number(loanId);
   const { loan, client, isLoading, error } = useLoan(id);
+  const [correctionMessages, setCorrectionMessages] = useState<
+    ApiMessage[] | null
+  >(null);
 
   if (isLoading) {
     return (
@@ -53,12 +55,6 @@ export default function LoanDetail() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-4">
-        <Button asChild variant="ghost" size="sm">
-          <Link to="/loans">
-            <IconArrowLeft className="size-4" />
-            Volver
-          </Link>
-        </Button>
         <h1 className="text-2xl font-semibold tracking-tight">
           Detalle del Préstamo
         </h1>
@@ -71,6 +67,32 @@ export default function LoanDetail() {
           </Button>
         </div>
       </div>
+
+      {correctionMessages && correctionMessages.length > 0 && (
+        <div className="space-y-2">
+          {correctionMessages.map((msg) => (
+            <Alert
+              key={msg.code}
+              className="border-primary/40 bg-primary/10 pr-10 [&>svg]:text-primary"
+            >
+              <InfoIcon />
+              <AlertDescription className="text-foreground/90 text-[13.5px] leading-relaxed">
+                {msg.message}
+              </AlertDescription>
+              <AlertAction
+                onClick={() =>
+                  setCorrectionMessages(
+                    (prev) => prev?.filter((m) => m.code !== msg.code) ?? null,
+                  )
+                }
+                className="top-1/2 right-3 -translate-y-1/2 cursor-pointer text-primary/60 transition-colors hover:text-primary"
+              >
+                <IconX className="size-4" />
+              </AlertAction>
+            </Alert>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
@@ -89,10 +111,7 @@ export default function LoanDetail() {
                 value={formatPercent(loan.interestRate)}
               />
               <Separator />
-              <DetailRow
-                label="Plazo"
-                value={`${loan.termMonths} meses`}
-              />
+              <DetailRow label="Plazo" value={`${loan.termMonths} meses`} />
               <Separator />
               <DetailRow
                 label="Fecha de Inicio"
@@ -127,7 +146,12 @@ export default function LoanDetail() {
         </Card>
       </div>
 
-      <LoanPaymentsSection loan={loan} />
+      <LoanPaymentsSection
+        loan={loan}
+        onPaymentCreated={({ messages }) => {
+          setCorrectionMessages(messages ?? null);
+        }}
+      />
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,32 +9,37 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { IconPlus } from "@tabler/icons-react";
-import { toast } from "sonner";
 import { formatCurrency, formatDate } from "@/lib/formats";
 import type { Loan } from "@/modules/loans/types/loan-types";
+import type { ApiMessage } from "@/types/api-response-type";
+import { IconPlus } from "@tabler/icons-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { useCreatePayment, usePayments } from "../hooks/use-payments";
 import type { PaymentFormData } from "../types/payment-types";
 import { NewPaymentDialog } from "./new-payment-dialog";
 
 interface LoanPaymentsSectionProps {
   loan: Loan;
+  onPaymentCreated?: (result: { messages?: ApiMessage[] }) => void;
 }
 
-export function LoanPaymentsSection({ loan }: LoanPaymentsSectionProps) {
+export function LoanPaymentsSection({
+  loan,
+  onPaymentCreated,
+}: LoanPaymentsSectionProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { payments, isLoading, error } = usePayments(loan.id);
   const createPaymentMutation = useCreatePayment(loan.id);
 
   async function handleCreatePayment(data: PaymentFormData) {
     try {
-      await createPaymentMutation.mutateAsync(data);
+      const result = await createPaymentMutation.mutateAsync(data);
       setDialogOpen(false);
       toast.success("Pago registrado exitosamente.");
+      onPaymentCreated?.({ messages: result.messages });
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Error al registrar el pago.",
-      );
+      console.error(err);
       throw err;
     }
   }

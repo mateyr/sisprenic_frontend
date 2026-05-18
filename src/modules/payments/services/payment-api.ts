@@ -1,4 +1,6 @@
+import type { ApiResponse } from "@/types/api-response-type";
 import type { Payment, PaymentFormData } from "../types/payment-types";
+import { PaymentValidationError } from "../types/payment-types";
 
 const API_BASE_URL = "http://localhost:5162";
 
@@ -28,7 +30,7 @@ export async function getLoanPayments(loanId: number): Promise<Payment[]> {
 
 export async function createPayment(
   data: PaymentFormData & { loanId: number },
-): Promise<Payment> {
+): Promise<ApiResponse<Payment>> {
   const response = await fetch(`${API_BASE_URL}/payments`, {
     method: "POST",
     credentials: "include",
@@ -36,9 +38,19 @@ export async function createPayment(
     body: JSON.stringify(data),
   });
 
+  if (response.status === 400) {
+    const body = (await response.json()) as {
+      errors?: Record<string, string[]>;
+    };
+    const messages = Object.values(body.errors ?? {}).flat();
+    throw new PaymentValidationError(
+      messages.length > 0 ? messages : ["Error de validación."],
+    );
+  }
+
   if (!response.ok) {
     throw new Error("Error al registrar el pago.");
   }
 
-  return response.json() as Promise<Payment>;
+  return response.json() as Promise<ApiResponse<Payment>>;
 }

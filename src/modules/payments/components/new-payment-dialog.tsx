@@ -15,7 +15,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { paymentFormSchema } from "../types/payment-types";
+import { paymentFormSchema, PaymentValidationError } from "../types/payment-types";
 import type { PaymentFormData } from "../types/payment-types";
 import type { Loan } from "@/modules/loans/types/loan-types";
 import { cn } from "@/lib/utils";
@@ -42,7 +42,7 @@ export function NewPaymentDialog({
   loan,
   onSubmit,
 }: NewPaymentDialogProps) {
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitErrors, setSubmitErrors] = useState<string[] | null>(null);
 
   const form = useForm({
     defaultValues: {
@@ -55,14 +55,18 @@ export function NewPaymentDialog({
       onSubmit: paymentFormSchema,
     },
     onSubmit: async ({ value }) => {
-      setSubmitError(null);
+      setSubmitErrors(null);
       try {
         await onSubmit(value);
         form.reset();
       } catch (err) {
-        setSubmitError(
-          err instanceof Error ? err.message : "Ocurrió un error inesperado.",
-        );
+        if (err instanceof PaymentValidationError) {
+          setSubmitErrors(err.messages);
+        } else {
+          setSubmitErrors([
+            err instanceof Error ? err.message : "Ocurrió un error inesperado.",
+          ]);
+        }
       }
     },
   });
@@ -70,7 +74,7 @@ export function NewPaymentDialog({
   function handleOpenChange(nextOpen: boolean) {
     if (!nextOpen) {
       form.reset();
-      setSubmitError(null);
+      setSubmitErrors(null);
     }
     onOpenChange(nextOpen);
   }
@@ -93,9 +97,17 @@ export function NewPaymentDialog({
           }}
         >
           <FieldGroup>
-            {submitError && (
+            {submitErrors && submitErrors.length > 0 && (
               <div className="rounded-md border border-destructive/20 bg-destructive/5 p-3 text-sm text-destructive">
-                {submitError}
+                {submitErrors.length === 1 ? (
+                  submitErrors[0]
+                ) : (
+                  <ul className="list-disc pl-4 space-y-1">
+                    {submitErrors.map((msg, i) => (
+                      <li key={i}>{msg}</li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
 
