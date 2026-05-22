@@ -15,9 +15,10 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { paymentFormSchema, PaymentValidationError } from "../types/payment-types";
+import { paymentFormSchema } from "../types/payment-types";
 import type { PaymentFormData } from "../types/payment-types";
 import type { Loan } from "@/modules/loans/types/loan-types";
+import { ProblemDetailsError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -60,13 +61,16 @@ export function NewPaymentDialog({
         await onSubmit(value);
         form.reset();
       } catch (err) {
-        if (err instanceof PaymentValidationError) {
+        console.error(err);
+      
+        if (err instanceof ProblemDetailsError) {
           setSubmitErrors(err.messages);
-        } else {
-          setSubmitErrors([
-            err instanceof Error ? err.message : "Ocurrió un error inesperado.",
-          ]);
+          return;
         }
+      
+        setSubmitErrors([
+          "No se pudo completar la operación. Inténtalo nuevamente.",
+        ]);
       }
     },
   });

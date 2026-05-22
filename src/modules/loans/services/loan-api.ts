@@ -1,3 +1,4 @@
+import { throwApiError } from "@/lib/api-errors";
 import type { Loan, LoanFormData } from "../types/loan-types";
 
 const API_BASE_URL = "http://localhost:5162";
@@ -46,24 +47,20 @@ export async function createLoan(data: LoanFormData): Promise<Loan> {
 
 export async function updateLoan(
   id: number,
-  data: LoanFormData,
-): Promise<Loan> {
+  data: Partial<LoanFormData>,
+): Promise<void> {
+  const body: Record<string, unknown> = { ...data };
+
   const response = await fetch(`${API_BASE_URL}/loans/${id}`, {
-    method: "PUT",
+    method: "PATCH",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      ...data,
-      interestRate: data.interestRate / 100,
-      client: null,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
-    throw new Error("Error al actualizar el préstamo.");
+    await throwApiError(response, "Error al actualizar el préstamo.");
   }
-
-  return response.json() as Promise<Loan>;
 }
 
 export async function deleteLoan(id: number): Promise<void> {

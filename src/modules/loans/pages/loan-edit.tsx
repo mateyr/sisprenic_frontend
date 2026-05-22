@@ -1,24 +1,39 @@
+import { Alert, AlertAction, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProblemDetailsError } from "@/lib/api-errors";
 import { useClients } from "@/modules/clients/hooks/use-clients";
 import { getFullName } from "@/modules/clients/types/client-types";
-import { IconArrowLeft } from "@tabler/icons-react";
+import { IconArrowLeft, IconX } from "@tabler/icons-react";
 import { useForm } from "@tanstack/react-form";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
-import { useState } from "react";
+import { CircleAlertIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { LoanSummary } from "../components/loan-summary";
 import { useLoan } from "../hooks/use-loan";
 import { updateLoan } from "../services/loan-api";
+import type { Loan, LoanFormData } from "../types/loan-types";
 import { loanFormSchema } from "../types/loan-types";
+
+type SubmitError = { id: string; message: string };
+
+// Generate stable IDs for rendering since backend may not provide identifiers for messages
+let submitErrorSeq = 0;
+function toSubmitErrors(messages: string[]): SubmitError[] {
+  return messages.map((message) => ({
+    id: `err-${++submitErrorSeq}`,
+    message,
+  }));
+}
 
 export default function LoanEdit() {
   const { loanId } = useParams({ strict: false }) as { loanId: string };
@@ -26,7 +41,6 @@ export default function LoanEdit() {
   const { loan, isLoading: loanLoading, error: loanError } = useLoan(id);
   const { clients, isLoading: clientsLoading } = useClients();
   const navigate = useNavigate();
-  const [submitError, setSubmitError] = useState<string | null>(null);
 
   if (loanLoading) {
     return (
@@ -63,8 +77,6 @@ export default function LoanEdit() {
       loan={loan}
       clients={clients}
       clientsLoading={clientsLoading}
-      submitError={submitError}
-      onSubmitError={setSubmitError}
       onSuccess={() => navigate({ to: `/loans/${id}` })}
     />
   );
@@ -74,41 +86,77 @@ function LoanEditForm({
   loan,
   clients,
   clientsLoading,
-  submitError,
-  onSubmitError,
   onSuccess,
 }: {
-  loan: { id: number; principal: number; interestRate: number; termMonths: number; startDate: string; clientId: number };
-  clients: { id: number; firstName: string; secondName: string; lastName: string; secondLastName: string; identification: string; phoneNumber: string }[];
+  loan: Loan;
+  clients: {
+    id: number;
+    firstName: string;
+    secondName: string;
+    lastName: string;
+    secondLastName: string;
+    identification: string;
+    phoneNumber: string;
+  }[];
   clientsLoading: boolean;
-  submitError: string | null;
-  onSubmitError: (error: string | null) => void;
   onSuccess: () => void;
 }) {
+  const [submitErrors, setSubmitErrors] = useState<SubmitError[]>([]);
+
+  useEffect(() => {
+    if (submitErrors.length === 0) return;
+    const timer = setTimeout(() => setSubmitErrors([]), 10_000);
+    return () => clearTimeout(timer);
+  }, [submitErrors]);
+
+  const originalValues: LoanFormData = {
+    clientId: loan.client.id,
+    principal: loan.principal,
+    interestRate: loan.interestRate * 100,
+    termMonths: loan.termMonths,
+    startDate: loan.startDate.split("T")[0],
+  };
+
   const form = useForm({
-    defaultValues: {
-      clientId: loan.clientId,
-      principal: loan.principal,
-      interestRate: loan.interestRate * 100,
-      termMonths: loan.termMonths,
-      startDate: loan.startDate.split("T")[0],
-    },
+    defaultValues: originalValues,
     validators: {
       onSubmit: loanFormSchema,
     },
     onSubmit: async ({ value }) => {
-      onSubmitError(null);
+      setSubmitErrors([]);
+
+      const diff: Partial<LoanFormData> = {};
+      if (value.clientId !== originalValues.clientId)
+        diff.clientId = value.clientId;
+      if (value.principal !== originalValues.principal)
+        diff.principal = value.principal;
+      if (value.interestRate !== originalValues.interestRate)
+        diff.interestRate = value.interestRate / 100;
+      if (value.termMonths !== originalValues.termMonths)
+        diff.termMonths = value.termMonths;
+      if (value.startDate !== originalValues.startDate)
+        diff.startDate = value.startDate;
+
+      if (Object.keys(diff).length === 0) {
+        onSuccess();
+        return;
+      }
+
       try {
-        await updateLoan(loan.id, value);
+        await updateLoan(loan.id, diff);
         toast.success("Préstamo actualizado exitosamente.");
         onSuccess();
       } catch (err) {
-        const message =
-          err instanceof Error
-            ? err.message
-            : "Error al actualizar el préstamo.";
-        onSubmitError(message);
-        toast.error(message);
+        if (err instanceof ProblemDetailsError) {
+          setSubmitErrors(toSubmitErrors(err.messages));
+        } else {
+          console.error(err);
+          setSubmitErrors(
+            toSubmitErrors([
+              "Ocurrió un error inesperado. Por favor contacta a TI.",
+            ]),
+          );
+        }
       }
     },
   });
@@ -127,6 +175,32 @@ function LoanEditForm({
         </h1>
       </div>
 
+      {submitErrors.length > 0 && (
+        <div className="space-y-2">
+          {submitErrors.map((error) => (
+            <Alert
+              key={error.id}
+              className="border-destructive/40 bg-destructive/10 pr-10 [&>svg]:text-destructive"
+            >
+              <CircleAlertIcon />
+              <AlertDescription className="text-foreground/90 text-[13.5px] leading-relaxed">
+                {error.message}
+              </AlertDescription>
+              <AlertAction
+                onClick={() =>
+                  setSubmitErrors((prev) =>
+                    prev.filter((e) => e.id !== error.id),
+                  )
+                }
+                className="top-1/2 right-3 -translate-y-1/2 cursor-pointer text-destructive/60 transition-colors hover:text-destructive"
+              >
+                <IconX className="size-4" />
+              </AlertAction>
+            </Alert>
+          ))}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -141,12 +215,6 @@ function LoanEditForm({
               }}
             >
               <FieldGroup>
-                {submitError && (
-                  <div className="text-destructive text-sm rounded-md border border-destructive/20 bg-destructive/5 p-3">
-                    {submitError}
-                  </div>
-                )}
-
                 <form.Field
                   name="clientId"
                   children={(field) => {

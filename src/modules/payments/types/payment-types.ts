@@ -9,15 +9,6 @@ export type Payment = {
   loanId: number;
 };
 
-export class PaymentValidationError extends Error {
-  public readonly messages: string[]
-  constructor(messages: string[]) {
-    super(messages.join("; "));
-    this.messages = messages
-    this.name = "PaymentValidationError";
-  }
-}
-
 export const paymentFormSchema = z.object({
   interest: z.number().min(0, "El interés debe ser mayor o igual a 0"),
   principal: z.number().min(0, "El capital debe ser mayor o igual a 0"),
