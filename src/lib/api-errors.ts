@@ -20,7 +20,7 @@
  * Components can catch this specifically to render field-level feedback.
  */
 
-type FieldErrors = Record<string, readonly string[]>;
+export type FieldErrors = Record<string, readonly string[]>;
 
 export class ProblemDetailsError extends Error {
   public readonly fieldErrors: FieldErrors;

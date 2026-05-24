@@ -1,9 +1,13 @@
+import { Alert, AlertAction, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProblemDetailsError, type FieldErrors } from "@/lib/api-errors";
 import { formatCurrency } from "@/lib/formats";
 import { getFullName } from "@/modules/clients/types/client-types";
-import type { RowSelectionState } from "@tanstack/react-table";
+import { IconX } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import type { RowSelectionState } from "@tanstack/react-table";
+import { CircleAlertIcon } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { LoanDeleteDialog } from "../components/loan-delete-dialog";
 import { LoanTable } from "../components/loan-table";
@@ -18,6 +22,15 @@ export default function LoanIndex() {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteErrors, setDeleteErrors] = useState<FieldErrors | string | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (deleteErrors?.length === 0) return;
+    const timer = setTimeout(() => setDeleteErrors(null), 10_000);
+    return () => clearTimeout(timer);
+  }, [deleteErrors]);
 
   const selectedIds = Object.keys(rowSelection);
   const selectedLoan =
@@ -33,7 +46,7 @@ export default function LoanIndex() {
       ? `el préstamo de ${formatCurrency(selectedLoan.principal)} del cliente ${
           selectedLoan.client
             ? getFullName(selectedLoan.client)
-            : `#${selectedLoan.clientId}`
+            : `#${selectedLoan.client}`
         }`
       : `${selectedIds.length} préstamos`;
 
@@ -54,11 +67,15 @@ export default function LoanIndex() {
 
   function handleEdit() {
     if (!selectedLoan) return;
-    navigate({ to: "/loans/$loanId/edit", params: { loanId: String(selectedLoan.id) } });
+    navigate({
+      to: "/loans/$loanId/edit",
+      params: { loanId: String(selectedLoan.id) },
+    });
   }
 
   async function handleDelete() {
     if (selectedIds.length === 0) return;
+    setDeleteErrors(null);
     try {
       for (const id of selectedIds) {
         await deleteLoan(Number(id));
@@ -72,16 +89,68 @@ export default function LoanIndex() {
           : `${selectedIds.length} préstamos eliminados exitosamente.`,
       );
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Error al eliminar el préstamo.",
+      setIsDeleteOpen(false);
+
+      if (err instanceof ProblemDetailsError) {
+        setDeleteErrors(err.fieldErrors);
+        return;
+      }
+
+      setDeleteErrors(
+        err instanceof Error ? err.message : "Ocurrió un error inesperado",
       );
-      throw err;
     }
   }
 
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold tracking-tight">Préstamos</h1>
+
+      {deleteErrors && (
+        <div className="space-y-2">
+          {typeof deleteErrors === "string" ? (
+            <Alert className="border-destructive/40 bg-destructive/10 pr-10 [&>svg]:text-destructive">
+              <CircleAlertIcon />
+              <AlertDescription className="text-foreground/90 text-[13.5px] leading-relaxed">
+                {deleteErrors}
+              </AlertDescription>
+              <AlertAction
+                onClick={() => setDeleteErrors(null)}
+                className="top-1/2 right-3 -translate-y-1/2 cursor-pointer text-destructive/60 transition-colors hover:text-destructive"
+              >
+                <IconX className="size-4" />
+              </AlertAction>
+            </Alert>
+          ) : (
+            Object.entries(deleteErrors).map(([field, messages]) => (
+              <Alert
+                key={field}
+                className="border-destructive/40 bg-destructive/10 pr-10 [&>svg]:text-destructive"
+              >
+                <CircleAlertIcon />
+                <AlertDescription className="text-foreground/90 text-[13.5px] leading-relaxed">
+                  {messages.join(", ")}
+                </AlertDescription>
+                <AlertAction
+                  onClick={() =>
+                    setDeleteErrors((prev) => {
+                      const { [field]: _, ...remainingErrors } =
+                        prev as FieldErrors;
+
+                      return Object.keys(remainingErrors).length > 0
+                        ? remainingErrors
+                        : null;
+                    })
+                  }
+                  className="top-1/2 right-3 -translate-y-1/2 cursor-pointer text-destructive/60 transition-colors hover:text-destructive"
+                >
+                  <IconX className="size-4" />
+                </AlertAction>
+              </Alert>
+            ))
+          )}
+        </div>
+      )}
 
       <LoanToolbar
         searchQuery={searchQuery}

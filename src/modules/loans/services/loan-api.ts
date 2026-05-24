@@ -64,12 +64,19 @@ export async function updateLoan(
 }
 
 export async function deleteLoan(id: number): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/loans/${id}`, {
-    method: "DELETE",
-    credentials: "include",
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/loans/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+  } catch (error) {
+    console.error(error);
+
+    throw new Error("Ocurrió un error inesperado.");
+  }
 
   if (!response.ok) {
-    throw new Error("Error al eliminar el préstamo.");
+    await throwApiError(response, "Error al eliminar el préstamo.");
   }
 }
