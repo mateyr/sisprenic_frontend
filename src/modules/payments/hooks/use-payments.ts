@@ -1,7 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createPayment,
+  deletePayment,
   getLoanPayments,
   getPayments,
 } from "../services/payment-api";
@@ -20,7 +21,12 @@ export function usePayments(loanId?: number) {
   return {
     payments: data ?? [],
     isLoading,
-    error: error instanceof Error ? error.message : error ? "Error desconocido" : null,
+    error:
+      error instanceof Error
+        ? error.message
+        : error
+          ? "Error desconocido"
+          : null,
   };
 }
 
@@ -30,7 +36,25 @@ export function useCreatePayment(loanId: number) {
   return useMutation({
     mutationFn: (data: PaymentFormData) => createPayment({ ...data, loanId }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.loans.detail(loanId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.loans.detail(loanId),
+      });
+    },
+  });
+}
+
+export function useDeletePayment(loanId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (paymentId: number) => deletePayment(paymentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.loans.payments(loanId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.loans.detail(loanId),
+      });
     },
   });
 }

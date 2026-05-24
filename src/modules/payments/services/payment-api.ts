@@ -44,3 +44,14 @@ export async function createPayment(
 
   return response.json() as Promise<ApiResponse<Payment>>;
 }
+
+export async function deletePayment(paymentId: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/payments/${paymentId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    await throwApiError(response, "Error al eliminar el pago.");
+  }
+}
