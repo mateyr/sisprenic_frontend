@@ -18,15 +18,6 @@ import {
 import { useAuth } from "@/context/auth";
 import { useRouter } from "@tanstack/react-router";
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { user, logout } = useAuth();
@@ -34,8 +25,7 @@ export function NavUser() {
 
   if (!user) return null;
 
-  const displayName = user.user_name;
-  const initials = getInitials(displayName);
+  const initial = user.email[0].toUpperCase();
 
   async function handleLogout() {
     try {
@@ -58,12 +48,11 @@ export function NavUser() {
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarFallback className="rounded-lg">
-                  {initials}
+                  {initial}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{displayName}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate font-medium">{user.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -78,12 +67,11 @@ export function NavUser() {
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarFallback className="rounded-lg">
-                    {initials}
+                    {initial}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{displayName}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-medium">{user.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
