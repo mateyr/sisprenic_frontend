@@ -96,9 +96,7 @@ export default function LoanIndex() {
         return;
       }
 
-      setDeleteErrors(
-        err instanceof Error ? err.message : "Ocurrió un error inesperado",
-      );
+      setDeleteErrors((err as Error).message);
     }
   }
 

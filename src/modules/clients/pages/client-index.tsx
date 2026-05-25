@@ -1,8 +1,12 @@
+import { Alert, AlertAction, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProblemDetailsError, type FieldErrors } from "@/lib/api-errors";
 import { clientColumns } from "@/modules/clients/types/client-table-types";
+import { IconX } from "@tabler/icons-react";
 import type { RowSelectionState } from "@tanstack/react-table";
+import { CircleAlertIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useState } from "react";
 import { ClientDeleteDialog } from "../components/client-delete-dialog";
 import { ClientFormDialog } from "../components/client-form-dialog";
 import { ClientTable } from "../components/client-table";
@@ -24,6 +28,23 @@ export default function ClientIndex() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteErrors, setDeleteErrors] = useState<FieldErrors | string | null>(
+    null,
+  );
+  const [isDismissing, setIsDismissing] = useState(false);
+
+  useEffect(() => {
+    if (!deleteErrors) {
+      setIsDismissing(false);
+      return;
+    }
+    const fadeTimer = setTimeout(() => setIsDismissing(true), 7000);
+    const clearTimer = setTimeout(() => setDeleteErrors(null), 7700);
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(clearTimer);
+    };
+  }, [deleteErrors]);
 
   const selectedIds = Object.keys(rowSelection);
   const selectedClient =
@@ -72,6 +93,7 @@ export default function ClientIndex() {
   // TODO: Implement bulk delete endpoint for multiple clients
   async function handleDelete() {
     if (selectedIds.length === 0) return;
+    setDeleteErrors(null);
     try {
       for (const id of selectedIds) {
         await deleteClient(Number(id));
@@ -85,16 +107,63 @@ export default function ClientIndex() {
           : `${selectedIds.length} clientes eliminados exitosamente.`,
       );
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Error al eliminar el cliente.",
-      );
-      throw err;
+      setIsDeleteOpen(false);
+      if (err instanceof ProblemDetailsError) {
+        setDeleteErrors(err.fieldErrors);
+        return;
+      }
+
+      setDeleteErrors((err as Error).message);
     }
   }
 
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold tracking-tight">Clientes</h1>
+
+      {deleteErrors && (
+        <div
+          className={`space-y-2 transition-opacity duration-700 ${isDismissing ? "opacity-0" : "opacity-100"}`}
+        >
+          {typeof deleteErrors === "string" ? (
+            <Alert className="border-destructive/40 bg-destructive/10 pr-10 [&>svg]:text-destructive">
+              <CircleAlertIcon />
+              <AlertDescription className="text-foreground/90 text-[13.5px] leading-relaxed">
+                {deleteErrors}
+              </AlertDescription>
+              <AlertAction
+                onClick={() => setDeleteErrors(null)}
+                className="top-1/2 right-3 -translate-y-1/2 cursor-pointer text-destructive/60 transition-colors hover:text-destructive"
+              >
+                <IconX className="size-4" />
+              </AlertAction>
+            </Alert>
+          ) : (
+            Object.entries(deleteErrors).map(([field, messages]) => (
+              <Alert
+                key={field}
+                className="border-destructive/40 bg-destructive/10 pr-10 [&>svg]:text-destructive"
+              >
+                <CircleAlertIcon />
+                <AlertDescription className="text-foreground/90 text-[13.5px] leading-relaxed">
+                  {messages.join(", ")}
+                </AlertDescription>
+                <AlertAction
+                  onClick={() =>
+                    setDeleteErrors((prev) => {
+                      const { [field]: _, ...rest } = prev as FieldErrors;
+                      return Object.keys(rest).length > 0 ? rest : null;
+                    })
+                  }
+                  className="top-1/2 right-3 -translate-y-1/2 cursor-pointer text-destructive/60 transition-colors hover:text-destructive"
+                >
+                  <IconX className="size-4" />
+                </AlertAction>
+              </Alert>
+            ))
+          )}
+        </div>
+      )}
 
       <ClientToolbar
         searchQuery={searchQuery}

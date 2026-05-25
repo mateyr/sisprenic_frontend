@@ -1,3 +1,4 @@
+import { throwApiError } from "@/lib/api-errors";
 import type { Client, ClientDetail, ClientFormData } from "../types/client-types";
 
 const API_BASE_URL = "http://localhost:5162";
@@ -70,12 +71,17 @@ export async function updateClient(
 }
 
 export async function deleteClient(id: number): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/clients/${id}`, {
-    method: "DELETE",
-    credentials: "include",
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/clients/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+  } catch {
+    throw new Error("Ocurrió un error inesperado.");
+  }
 
   if (!response.ok) {
-    throw new Error("Error al eliminar el cliente.");
+    await throwApiError(response, "Error al eliminar el cliente.");
   }
 }
