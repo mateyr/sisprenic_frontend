@@ -7,11 +7,12 @@ import { formatCurrency, formatDate, formatPercent } from "@/lib/formats";
 import { getFullName } from "@/modules/clients/types/client-types";
 import { LoanPaymentsSection } from "@/modules/payments/components/loan-payments-section";
 import type { ApiMessage } from "@/types/api-response-type";
-import { IconArrowLeft, IconEdit, IconX } from "@tabler/icons-react";
+import { IconArrowLeft, IconEdit, IconFileText, IconX } from "@tabler/icons-react";
 import { Link, useParams } from "@tanstack/react-router";
 import { InfoIcon } from "lucide-react";
 import { useState } from "react";
 import { useLoan } from "../hooks/use-loan";
+import { LoanContractDialog } from "../components/loan-contract-dialog";
 
 export default function LoanDetail() {
   const { loanId } = useParams({ strict: false }) as { loanId: string };
@@ -20,6 +21,7 @@ export default function LoanDetail() {
   const [correctionMessages, setCorrectionMessages] = useState<
     ApiMessage[] | null
   >(null);
+  const [contractOpen, setContractOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -58,7 +60,15 @@ export default function LoanDetail() {
         <h1 className="text-2xl font-semibold tracking-tight">
           Detalle del Préstamo
         </h1>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setContractOpen(true)}
+          >
+            <IconFileText className="size-4" />
+            Ver Contrato
+          </Button>
           <Button asChild size="sm">
             <Link to={`/loans/${id}/edit`}>
               <IconEdit className="size-4" />
@@ -152,6 +162,14 @@ export default function LoanDetail() {
           setCorrectionMessages(messages ?? null);
         }}
       />
+
+      {contractOpen && (
+        <LoanContractDialog
+          open={contractOpen}
+          onOpenChange={setContractOpen}
+          loan={loan}
+        />
+      )}
     </div>
   );
 }
