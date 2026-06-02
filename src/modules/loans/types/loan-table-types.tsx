@@ -46,14 +46,11 @@ export const loanColumns: ColumnDef<Loan>[] = [
     header: "Cliente",
     cell: ({ row }) => {
       const loan = row.original;
-      const clientName = loan.client
-        ? getFullName(loan.client)
-        : `Cliente #${loan.clientId}`;
-
+      const clientName = getFullName(loan.client);
       return (
         <Link
           to="/clients/$clientId"
-          params={{ clientId: String(loan.clientId) }}
+          params={{ clientId: String(loan.client.id) }}
           className="text-blue-600 underline-offset-4 hover:underline dark:text-blue-400"
         >
           {clientName}
@@ -65,14 +62,18 @@ export const loanColumns: ColumnDef<Loan>[] = [
     accessorKey: "principal",
     header: "Monto",
     cell: ({ row }) => (
-      <span className="tabular-nums">{formatCurrency(row.original.principal)}</span>
+      <span className="tabular-nums">
+        {formatCurrency(row.original.principal)}
+      </span>
     ),
   },
   {
     accessorKey: "interestRate",
     header: "Tasa",
     cell: ({ row }) => (
-      <span className="tabular-nums">{formatPercent(row.original.interestRate)}</span>
+      <span className="tabular-nums">
+        {formatPercent(row.original.interestRate)}
+      </span>
     ),
   },
   {
