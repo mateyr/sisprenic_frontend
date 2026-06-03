@@ -55,7 +55,7 @@ export function NavMain({ items }: { items: MenuItem[] }) {
                     <SidebarMenuItem key={menuItem.id}>
                       <SidebarMenuButton
                         asChild
-                        isActive={currentPath === menuItem.route}
+                        isActive={currentPath.includes(menuItem.route)}
                         tooltip={menuItem.name}
                       >
                         <Link to={menuItem.route}>

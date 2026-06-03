@@ -6,9 +6,10 @@ export function formatCurrency(amount: number): string {
 }
 
 export function formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString("es-NI", {
+    const [year, month, day] = dateString.split("-").map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString("es-NI", {
         year: "numeric",
-        month: "short",
+        month: "long",
         day: "numeric",
     });
 }
