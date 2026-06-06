@@ -63,17 +63,23 @@ export async function updateLoan(
   }
 }
 
-// TODO: endpoint pendiente de implementación en el backend
 export async function getLoanContract(id: number): Promise<Blob> {
-  const response = await fetch(`${API_BASE_URL}/loans/${id}/contract`, {
-    credentials: "include",
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/loans/${id}/contract`, {
+      credentials: "include",
+    });
 
-  if (!response.ok) {
-    throw new Error("No se pudo obtener el contrato del préstamo.");
+    if (!response.ok) {
+      throw new Error("No se pudo obtener el contrato del préstamo.");
+    }
+
+    return response.blob();
+  } catch (error) {
+    console.error(error);
+
+    throw new Error("Ocurrió un error inesperado.");
   }
-
-  return response.blob();
 }
 
 export async function deleteLoan(id: number): Promise<void> {

@@ -7,12 +7,17 @@ import { formatCurrency, formatDate, formatPercent } from "@/lib/formats";
 import { getFullName } from "@/modules/clients/types/client-types";
 import { LoanPaymentsSection } from "@/modules/payments/components/loan-payments-section";
 import type { ApiMessage } from "@/types/api-response-type";
-import { IconArrowLeft, IconEdit, IconFileText, IconX } from "@tabler/icons-react";
+import {
+  IconArrowLeft,
+  IconEdit,
+  IconFileText,
+  IconX,
+} from "@tabler/icons-react";
 import { Link, useParams } from "@tanstack/react-router";
 import { InfoIcon } from "lucide-react";
 import { useState } from "react";
-import { useLoan } from "../hooks/use-loan";
 import { LoanContractDialog } from "../components/loan-contract-dialog";
+import { useLoan } from "../hooks/use-loan";
 
 export default function LoanDetail() {
   const { loanId } = useParams({ strict: false }) as { loanId: string };
@@ -167,7 +172,7 @@ export default function LoanDetail() {
         <LoanContractDialog
           open={contractOpen}
           onOpenChange={setContractOpen}
-          loan={loan}
+          loanId={id}
         />
       )}
     </div>

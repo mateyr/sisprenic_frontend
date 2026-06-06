@@ -3,6 +3,7 @@ export const queryKeys = {
     all: () => ["loans"] as const,
     detail: (id: number) => ["loans", id] as const,
     payments: (loanId: number) => ["loans", loanId, "payments"] as const,
+    contract: (loanId: number) => ["loans", loanId, "contract"] as const,
   },
   payments: {
     all: () => ["payments"] as const,
