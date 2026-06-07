@@ -11,17 +11,14 @@ import { ClientDeleteDialog } from "../components/client-delete-dialog";
 import { ClientFormDialog } from "../components/client-form-dialog";
 import { ClientTable } from "../components/client-table";
 import { ClientToolbar } from "../components/client-toolbar";
-import { useClients } from "../hooks/use-clients";
-import {
-  createClient,
-  deleteClient,
-  updateClient,
-} from "../services/client-api";
+import { useClients, useUpdateClient } from "../hooks/use-clients";
+import { createClient, deleteClient } from "../services/client-api";
 import type { ClientFormData } from "../types/client-types";
 import { getFullName } from "../types/client-types";
 
 export default function ClientIndex() {
   const { clients, isLoading, error, refetch } = useClients();
+  const updateClientMutation = useUpdateClient();
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [searchQuery, setSearchQuery] = useState("");
@@ -60,9 +57,9 @@ export default function ClientIndex() {
       ? getFullName(selectedClient)
       : `${selectedIds.length} clientes`;
 
-  async function handleCreate(data: ClientFormData) {
+  async function handleCreate(data: ClientFormData | Partial<ClientFormData>) {
     try {
-      await createClient(data);
+      await createClient(data as ClientFormData);
       await refetch();
       setIsCreateOpen(false);
       toast.success("Cliente creado exitosamente.");
@@ -74,18 +71,20 @@ export default function ClientIndex() {
     }
   }
 
-  async function handleEdit(data: ClientFormData) {
+  async function handleEdit(data: Partial<ClientFormData>) {
     if (!selectedClient) return;
     try {
-      await updateClient(selectedClient.id, data);
-      await refetch();
+      await updateClientMutation.mutateAsync({
+        id: selectedClient.id,
+        data,
+      });
       setRowSelection({});
       setIsEditOpen(false);
       toast.success("Cliente actualizado exitosamente.");
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Error al actualizar el cliente.",
-      );
+      if (err instanceof ProblemDetailsError) {
+        throw err;
+      }
       throw err;
     }
   }

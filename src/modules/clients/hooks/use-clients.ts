@@ -1,28 +1,31 @@
-import { useCallback, useEffect, useState } from "react";
-import { getClients } from "../services/client-api";
-import type { Client } from "../types/client-types";
+import { queryKeys } from "@/lib/query-keys";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getClients, updateClient } from "../services/client-api";
+import type { ClientFormData } from "../types/client-types";
 
 export function useClients() {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.clients.all(),
+    queryFn: getClients,
+  });
 
-  const refetch = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await getClients();
-      setClients(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  return {
+    clients: data ?? [],
+    isLoading,
+    error: error?.message,
+    refetch,
+  };
+}
 
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
+export function useUpdateClient() {
+  const queryClient = useQueryClient();
 
-  return { clients, isLoading, error, refetch };
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<ClientFormData> }) =>
+      updateClient(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.clients.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(id) });
+    },
+  });
 }

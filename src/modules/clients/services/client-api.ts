@@ -1,5 +1,9 @@
 import { throwApiError } from "@/lib/api-errors";
-import type { Client, ClientDetail, ClientFormData } from "../types/client-types";
+import type {
+  Client,
+  ClientDetail,
+  ClientFormData,
+} from "../types/client-types";
 
 const API_BASE_URL = "http://localhost:5162";
 
@@ -56,17 +60,22 @@ export async function createClient(data: ClientFormData): Promise<Client> {
 
 export async function updateClient(
   id: number,
-  data: ClientFormData,
+  data: Partial<ClientFormData>,
 ): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/clients/${id}`, {
-    method: "PUT",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/clients/${id}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+  } catch {
+    throw new Error("Ocurrió un error inesperado.");
+  }
 
   if (!response.ok) {
-    throw new Error("Error al actualizar el cliente.");
+    await throwApiError(response, "Error al actualizar el cliente.");
   }
 }
 

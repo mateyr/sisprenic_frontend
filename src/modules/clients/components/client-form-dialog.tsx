@@ -1,4 +1,3 @@
-import { useForm } from "@tanstack/react-form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,16 +7,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { clientFormSchema } from "../types/client-types";
-import type { Client, ClientFormData } from "../types/client-types";
+import { ProblemDetailsError, type FieldErrors } from "@/lib/api-errors";
+import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
+import type { Client, ClientFormData } from "../types/client-types";
+import { clientFormSchema } from "../types/client-types";
 
 interface ClientFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: ClientFormData) => Promise<void>;
+  onSubmit: (data: ClientFormData | Partial<ClientFormData>) => Promise<void>;
   title: string;
   description?: string;
   defaultValues?: Client | null;
@@ -31,29 +37,64 @@ export function ClientFormDialog({
   description,
   defaultValues,
 }: ClientFormDialogProps) {
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitErrors, setSubmitErrors] = useState<FieldErrors | string | null>(
+    null,
+  );
+
+  const originalValues: ClientFormData = {
+    firstName: defaultValues?.firstName ?? "",
+    secondName: defaultValues?.secondName ?? "",
+    lastName: defaultValues?.lastName ?? "",
+    secondLastName: defaultValues?.secondLastName ?? "",
+    identification: defaultValues?.identification ?? "",
+    phoneNumber: defaultValues?.phoneNumber ?? "",
+  };
 
   const form = useForm({
-    defaultValues: {
-      firstName: defaultValues?.firstName ?? "",
-      secondName: defaultValues?.secondName ?? "",
-      lastName: defaultValues?.lastName ?? "",
-      secondLastName: defaultValues?.secondLastName ?? "",
-      identification: defaultValues?.identification ?? "",
-      phoneNumber: defaultValues?.phoneNumber ?? "",
-    },
+    defaultValues: originalValues,
     validators: {
       onSubmit: clientFormSchema,
     },
     onSubmit: async ({ value }) => {
-      setSubmitError(null);
+      setSubmitErrors(null);
+
+      let payload: ClientFormData | Partial<ClientFormData> = value;
+
+      if (defaultValues) {
+        const diff: Partial<ClientFormData> = {};
+        if (value.firstName !== originalValues.firstName)
+          diff.firstName = value.firstName;
+        if (value.secondName !== originalValues.secondName)
+          diff.secondName = value.secondName;
+        if (value.lastName !== originalValues.lastName)
+          diff.lastName = value.lastName;
+        if (value.secondLastName !== originalValues.secondLastName)
+          diff.secondLastName = value.secondLastName;
+        if (value.identification !== originalValues.identification)
+          diff.identification = value.identification;
+        if (value.phoneNumber !== originalValues.phoneNumber)
+          diff.phoneNumber = value.phoneNumber;
+
+        if (Object.keys(diff).length === 0) {
+          handleOpenChange(false);
+          return;
+        }
+
+        payload = diff;
+      }
+
       try {
-        await onSubmit(value);
+        await onSubmit(payload);
         form.reset();
       } catch (err) {
-        setSubmitError(
-          err instanceof Error ? err.message : "Ocurrió un error inesperado.",
-        );
+        console.error(err);
+
+        if (err instanceof ProblemDetailsError) {
+          setSubmitErrors(err.fieldErrors);
+          return;
+        }
+
+        setSubmitErrors((err as Error).message);
       }
     },
   });
@@ -61,7 +102,7 @@ export function ClientFormDialog({
   function handleOpenChange(nextOpen: boolean) {
     if (!nextOpen) {
       form.reset();
-      setSubmitError(null);
+      setSubmitErrors(null);
     }
     onOpenChange(nextOpen);
   }
@@ -71,9 +112,7 @@ export function ClientFormDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          {description && (
-            <DialogDescription>{description}</DialogDescription>
-          )}
+          {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
         <form
           id="client-form"
@@ -83,9 +122,22 @@ export function ClientFormDialog({
           }}
         >
           <FieldGroup>
-            {submitError && (
-              <div className="text-destructive text-sm rounded-md border border-destructive/20 bg-destructive/5 p-3">
-                {submitError}
+            {submitErrors && (
+              <div className="space-y-2">
+                {typeof submitErrors === "string" ? (
+                  <div className="rounded-md border border-destructive/20 bg-destructive/5 p-3 text-sm text-destructive">
+                    {submitErrors}
+                  </div>
+                ) : (
+                  Object.entries(submitErrors).map(([field, messages]) => (
+                    <div
+                      key={field}
+                      className="rounded-md border border-destructive/20 bg-destructive/5 p-3 text-sm text-destructive"
+                    >
+                      {messages.join(", ")}
+                    </div>
+                  ))
+                )}
               </div>
             )}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
