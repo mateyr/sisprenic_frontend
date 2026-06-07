@@ -1,4 +1,9 @@
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { queryKeys } from "@/lib/query-keys";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
@@ -56,6 +61,8 @@ export function LoanContractDialog({
         <DialogTitle className="sr-only">
           Contrato de Préstamo #{loanId}
         </DialogTitle>
+
+        <DialogDescription className="hidden"></DialogDescription>
 
         {isLoading && (
           <div className="flex h-full items-center justify-center">
