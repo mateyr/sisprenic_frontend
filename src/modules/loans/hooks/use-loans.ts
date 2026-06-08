@@ -1,28 +1,17 @@
-import { useCallback, useEffect, useState } from "react";
+import { queryKeys } from "@/lib/query-keys";
+import { useQuery } from "@tanstack/react-query";
 import { getLoans } from "../services/loan-api";
-import type { Loan } from "../types/loan-types";
 
 export function useLoans() {
-  const [loans, setLoans] = useState<Loan[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.loans.all(),
+    queryFn: getLoans,
+  });
 
-  const refetch = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await getLoans();
-      setLoans(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
-
-  return { loans, isLoading, error, refetch };
+  return {
+    loans: data ?? [],
+    isLoading,
+    error: error?.message ?? null,
+    refetch,
+  };
 }

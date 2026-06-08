@@ -7,6 +7,7 @@ export type Loan = {
   interestRate: number;
   termMonths: number;
   startDate: string;
+  status: string;
   client: Client;
   summary: LoanSummary;
 };

@@ -15,8 +15,9 @@ import {
 } from "@tabler/icons-react";
 import { Link, useParams } from "@tanstack/react-router";
 import { InfoIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { LoanContractDialog } from "../components/loan-contract-dialog";
+import { LoanStatusLabel } from "../components/loan-status-label";
 import { useLoan } from "../hooks/use-loan";
 
 export default function LoanDetail() {
@@ -132,6 +133,11 @@ export default function LoanDetail() {
                 label="Fecha de Inicio"
                 value={formatDate(loan.startDate)}
               />
+              <Separator />
+              <DetailRow
+                label="Estado"
+                value={<LoanStatusLabel status={loan.status} />}
+              />
             </dl>
           </CardContent>
         </Card>
@@ -179,7 +185,13 @@ export default function LoanDetail() {
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
+function DetailRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: ReactNode;
+}) {
   return (
     <div className="flex items-center justify-between">
       <dt className="text-muted-foreground text-sm">{label}</dt>

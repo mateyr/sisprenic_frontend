@@ -3,6 +3,7 @@ import { formatCurrency, formatDate, formatPercent } from "@/lib/formats";
 import { getFullName } from "@/modules/clients/types/client-types";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
+import { LoanStatusLabel } from "../components/loan-status-label";
 import type { Loan } from "./loan-types";
 
 export const loanColumns: ColumnDef<Loan>[] = [
@@ -85,5 +86,14 @@ export const loanColumns: ColumnDef<Loan>[] = [
     accessorKey: "startDate",
     header: "Fecha inicio",
     cell: ({ row }) => formatDate(row.original.startDate),
+  },
+  {
+    accessorKey: "status",
+    header: "Estado",
+    cell: ({ row }) => (
+      <div className="flex items-center">
+        <LoanStatusLabel status={row.original.status} />
+      </div>
+    ),
   },
 ];
