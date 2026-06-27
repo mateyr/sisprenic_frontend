@@ -15,7 +15,7 @@ export type UserInfo = {
 
 export type AuthContext = {
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<UserInfo>;
+  login: (userName: string, password: string) => Promise<UserInfo>;
   logout: () => Promise<void>;
   user: UserInfo | null;
 };

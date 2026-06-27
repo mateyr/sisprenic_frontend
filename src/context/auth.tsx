@@ -41,8 +41,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserInfo | null>(getStoredUser);
   const isAuthenticated = !!user;
 
-  const login = useCallback(async (email: string, password: string) => {
-    await loginRequest(email, password);
+  const login = useCallback(async (userName: string, password: string) => {
+    await loginRequest(userName, password);
     const userInfo = await getMe();
     setUser(userInfo);
     setStoredUser(userInfo);

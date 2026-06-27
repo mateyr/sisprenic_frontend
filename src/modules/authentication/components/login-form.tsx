@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth";
+import { ProblemDetailsError } from "@/lib/api-errors";
 import { getDefaultRoute } from "@/lib/menu-utils";
 import { cn, sleep } from "@/lib/utils";
 import { useRouter } from "@tanstack/react-router";
@@ -26,7 +27,7 @@ export function LoginForm({
   const auth = useAuth();
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
+  const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,15 +39,20 @@ export function LoginForm({
     setIsLoading(true);
 
     try {
-      const userInfo = await auth.login(email, password);
+      const userInfo = await auth.login(userName, password);
       await router.invalidate();
       // This is just a hack being used to wait for the auth state to update
       // in a real app, you'd want to use a more robust solution
       await sleep(1);
       const defaultRoute = getDefaultRoute(userInfo.menu);
       await router.navigate({ to: defaultRoute });
-    } catch {
-      setError("Credenciales incorrectas. Por favor, intenta de nuevo.");
+    } catch (err) {
+      if (err instanceof ProblemDetailsError) {
+        setError(err.messages.join(" "));
+        return;
+      }
+
+      setError((err as Error).message);
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +64,7 @@ export function LoginForm({
         <CardHeader>
           <CardTitle>Inicia sesión en tu cuenta</CardTitle>
           <CardDescription>
-            Ingresa tu correo electrónico para iniciar sesión
+            Ingresa tu nombre de usuario para iniciar sesión
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -66,14 +72,13 @@ export function LoginForm({
             <FieldGroup>
               {error && <FieldError>{error}</FieldError>}
               <Field>
-                <FieldLabel htmlFor="email">Correo electrónico</FieldLabel>
+                <FieldLabel htmlFor="userName">Nombre de usuario</FieldLabel>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="correo@ejemplo.com"
+                  id="userName"
+                  type="text"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
                   disabled={isLoading}
                 />
               </Field>

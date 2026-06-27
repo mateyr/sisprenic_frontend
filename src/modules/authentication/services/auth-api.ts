@@ -1,26 +1,33 @@
+import { throwApiError } from "@/lib/api-errors";
 import type { UserInfo } from "../types/user-types";
 
 const API_BASE_URL = "http://localhost:5162";
 
 export async function loginRequest(
-  email: string,
+  userName: string,
   password: string,
 ): Promise<void> {
-  const response = await fetch(
-    `${API_BASE_URL}/login?useCookies=true&useSessionCookies=true`,
-    {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        accept: "application/json",
+        accept: "*/*",
       },
-      body: JSON.stringify({ email, password }),
-    },
-  );
+      body: JSON.stringify({ userName, password }),
+    });
+  } catch (error) {
+    console.error(error);
+    throw new Error("No se pudo conectar con el servidor. Inténtalo de nuevo.");
+  }
 
   if (!response.ok) {
-    throw new Error("Credenciales incorrectas. Por favor, intenta de nuevo.");
+    await throwApiError(
+      response,
+      "Credenciales incorrectas. Por favor, intenta de nuevo.",
+    );
   }
 }
 
