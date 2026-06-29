@@ -11,6 +11,15 @@ export const clientFormSchema = z.object({
 
 export type ClientFormData = z.infer<typeof clientFormSchema>;
 
+export type ClientPayload = Partial<{
+  firstName: string;
+  secondName: string | null;
+  lastName: string;
+  secondLastName: string | null;
+  identification: string;
+  phoneNumber: string;
+}>;
+
 export type Client = {
   id: number;
   firstName: string;

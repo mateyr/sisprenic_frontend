@@ -17,13 +17,17 @@ import { Input } from "@/components/ui/input";
 import { ProblemDetailsError, type FieldErrors } from "@/lib/api-errors";
 import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
-import type { Client, ClientFormData } from "../types/client-types";
+import type {
+  Client,
+  ClientFormData,
+  ClientPayload,
+} from "../types/client-types";
 import { clientFormSchema } from "../types/client-types";
 
 interface ClientFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: ClientFormData | Partial<ClientFormData>) => Promise<void>;
+  onSubmit: (data: ClientPayload) => Promise<void>;
   title: string;
   description?: string;
   defaultValues?: Client | null;
@@ -58,18 +62,22 @@ export function ClientFormDialog({
     onSubmit: async ({ value }) => {
       setSubmitErrors(null);
 
-      let payload: ClientFormData | Partial<ClientFormData> = value;
+      let payload: ClientPayload = {
+        ...value,
+        secondName: value.secondName || null,
+        secondLastName: value.secondLastName || null,
+      };
 
       if (defaultValues) {
-        const diff: Partial<ClientFormData> = {};
+        const diff: ClientPayload = {};
         if (value.firstName !== originalValues.firstName)
           diff.firstName = value.firstName;
         if (value.secondName !== originalValues.secondName)
-          diff.secondName = value.secondName;
+          diff.secondName = value.secondName || null;
         if (value.lastName !== originalValues.lastName)
           diff.lastName = value.lastName;
         if (value.secondLastName !== originalValues.secondLastName)
-          diff.secondLastName = value.secondLastName;
+          diff.secondLastName = value.secondLastName || null;
         if (value.identification !== originalValues.identification)
           diff.identification = value.identification;
         if (value.phoneNumber !== originalValues.phoneNumber)

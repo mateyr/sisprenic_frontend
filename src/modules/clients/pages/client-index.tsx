@@ -13,7 +13,7 @@ import { ClientTable } from "../components/client-table";
 import { ClientToolbar } from "../components/client-toolbar";
 import { useClients, useUpdateClient } from "../hooks/use-clients";
 import { createClient, deleteClient } from "../services/client-api";
-import type { ClientFormData } from "../types/client-types";
+import type { ClientPayload } from "../types/client-types";
 import { getFullName } from "../types/client-types";
 
 export default function ClientIndex() {
@@ -57,9 +57,9 @@ export default function ClientIndex() {
       ? getFullName(selectedClient)
       : `${selectedIds.length} clientes`;
 
-  async function handleCreate(data: ClientFormData | Partial<ClientFormData>) {
+  async function handleCreate(data: ClientPayload) {
     try {
-      await createClient(data as ClientFormData);
+      await createClient(data);
       await refetch();
       setIsCreateOpen(false);
       toast.success("Cliente creado exitosamente.");
@@ -71,7 +71,7 @@ export default function ClientIndex() {
     }
   }
 
-  async function handleEdit(data: Partial<ClientFormData>) {
+  async function handleEdit(data: ClientPayload) {
     if (!selectedClient) return;
     try {
       await updateClientMutation.mutateAsync({

@@ -1,7 +1,7 @@
 import { queryKeys } from "@/lib/query-keys";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getClients, updateClient } from "../services/client-api";
-import type { ClientFormData } from "../types/client-types";
+import type { ClientPayload } from "../types/client-types";
 
 export function useClients() {
   const { data, isLoading, error, refetch } = useQuery({
@@ -21,7 +21,7 @@ export function useUpdateClient() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<ClientFormData> }) =>
+    mutationFn: ({ id, data }: { id: number; data: ClientPayload }) =>
       updateClient(id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all() });
