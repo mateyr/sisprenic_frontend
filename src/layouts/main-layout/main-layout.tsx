@@ -6,6 +6,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Outlet } from "@tanstack/react-router";
+import { IconLoader2 } from "@tabler/icons-react";
 import { Suspense } from "react";
 import { AppSidebar } from "./app-sidebar";
 import { DynamicBreadcrumb } from "./dynamic-breadcrumb";
@@ -26,7 +27,13 @@ const MainLayout = () => {
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-5 pt-4">
-          <Suspense>
+          <Suspense
+            fallback={
+              <div className="flex flex-1 items-center justify-center p-10">
+                <IconLoader2 className="size-6 animate-spin text-muted-foreground" />
+              </div>
+            }
+          >
             <Outlet />
           </Suspense>
         </div>

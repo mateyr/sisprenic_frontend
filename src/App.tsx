@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import "./App.css";
 import { AuthProvider, useAuth } from "./context/auth";
+import { RouteErrorComponent } from "./routes/route-error-component";
 import { routeTree } from "./routes/routes";
 
 const queryClient = new QueryClient();
@@ -10,6 +11,7 @@ const router = createRouter({
   routeTree,
   defaultPreload: "intent",
   scrollRestoration: true,
+  defaultErrorComponent: RouteErrorComponent,
   context: {
     auth: undefined!, // This will be set after we wrap the app in an AuthProvider
   },
