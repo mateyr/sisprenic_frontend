@@ -1,3 +1,4 @@
+import { AUTH_EXPIRED_EVENT } from "@/lib/http";
 import {
   getMe,
   loginRequest,
@@ -56,7 +57,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    setUser(getStoredUser());
+    if (!getStoredUser()) return;
+
+    let cancelled = false;
+
+    getMe()
+      .then((userInfo) => {
+        if (cancelled) return;
+        setUser(userInfo);
+        setStoredUser(userInfo);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setUser(null);
+        setStoredUser(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    function handleSessionExpired() {
+      setUser(null);
+      setStoredUser(null);
+      if (window.location.pathname !== "/") {
+        window.location.href = "/";
+      }
+    }
+
+    window.addEventListener(AUTH_EXPIRED_EVENT, handleSessionExpired);
+    return () =>
+      window.removeEventListener(AUTH_EXPIRED_EVENT, handleSessionExpired);
   }, []);
 
   return (

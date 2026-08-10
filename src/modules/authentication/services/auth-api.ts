@@ -31,7 +31,7 @@ export async function loginRequest(
 }
 
 export async function logoutRequest(): Promise<void> {
-  await fetch(`${API_BASE_URL}/logout`, {
+  await fetch(`${API_BASE_URL}/auth/logout`, {
     method: "POST",
     credentials: "include",
   });
