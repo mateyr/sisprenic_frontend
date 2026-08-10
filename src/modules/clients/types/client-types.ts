@@ -2,9 +2,9 @@ import { z } from "zod";
 
 export const clientFormSchema = z.object({
   firstName: z.string().min(1, "El primer nombre es requerido"),
-  secondName: z.string().optional().default(""),
+  secondName: z.string(),
   lastName: z.string().min(1, "El primer apellido es requerido"),
-  secondLastName: z.string().optional().default(""),
+  secondLastName: z.string(),
   identification: z.string().min(1, "La identificación es requerida"),
   phoneNumber: z.string().min(1, "El teléfono es requerido"),
 });
