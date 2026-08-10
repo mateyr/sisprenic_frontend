@@ -8,7 +8,7 @@ export const authRouteLayout = createRoute({
   getParentRoute: () => rootRoute,
   id: "auth-layout",
   beforeLoad: ({ context }) => {
-    if (context.auth.isAuthenticated) {
+    if (context.auth.isAuthenticated && context.auth.user) {
       const defaultRoute = getDefaultRoute(context.auth.user.menu);
       throw redirect({ to: defaultRoute });
     }

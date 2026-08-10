@@ -1,4 +1,4 @@
-import type { AuthContext } from "@/context/auth";
+import type { AuthContext } from "@/modules/authentication/types/user-types";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
