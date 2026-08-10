@@ -15,6 +15,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { flushSync } from "react-dom";
 
 const AuthContext = createContext<AuthContext | null>(null);
 
@@ -45,7 +46,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(async (userName: string, password: string) => {
     await loginRequest(userName, password);
     const userInfo = await getMe();
-    setUser(userInfo);
+    // Flush synchronously so the router's context (fed via the `context`
+    // prop on RouterProvider) is updated before the caller runs
+    // router.invalidate()/navigate() right after login() resolves.
+    flushSync(() => {
+      setUser(userInfo);
+    });
     setStoredUser(userInfo);
     return userInfo;
   }, []);

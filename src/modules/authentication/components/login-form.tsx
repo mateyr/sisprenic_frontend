@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth";
 import { ProblemDetailsError } from "@/lib/api-errors";
 import { getDefaultRoute } from "@/lib/menu-utils";
-import { cn, sleep } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -41,9 +41,6 @@ export function LoginForm({
     try {
       const userInfo = await auth.login(userName, password);
       await router.invalidate();
-      // This is just a hack being used to wait for the auth state to update
-      // in a real app, you'd want to use a more robust solution
-      await sleep(1);
       const defaultRoute = getDefaultRoute(userInfo.menu);
       await router.navigate({ to: defaultRoute });
     } catch (err) {
