@@ -1,7 +1,6 @@
 import { throwApiError } from "@/lib/api-errors";
+import { API_BASE_URL } from "@/lib/env";
 import type { UserInfo } from "../types/user-types";
-
-const API_BASE_URL = "http://localhost:5162";
 
 export async function loginRequest(
   userName: string,

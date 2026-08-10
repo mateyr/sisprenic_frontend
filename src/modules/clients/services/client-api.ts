@@ -1,11 +1,10 @@
 import { throwApiError } from "@/lib/api-errors";
+import { API_BASE_URL } from "@/lib/env";
 import type {
   Client,
   ClientDetail,
   ClientPayload,
 } from "../types/client-types";
-
-const API_BASE_URL = "http://localhost:5162";
 
 export async function getClients(): Promise<Client[]> {
   const response = await fetch(`${API_BASE_URL}/clients`, {

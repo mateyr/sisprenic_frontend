@@ -1,8 +1,7 @@
 import { throwApiError } from "@/lib/api-errors";
+import { API_BASE_URL } from "@/lib/env";
 import type { ApiResponse } from "@/types/api-response-type";
 import type { Payment, PaymentFormData } from "../types/payment-types";
-
-const API_BASE_URL = "http://localhost:5162";
 
 export async function getPayments(): Promise<Payment[]> {
   const response = await fetch(`${API_BASE_URL}/payments`, {
