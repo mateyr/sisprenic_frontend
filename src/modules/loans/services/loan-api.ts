@@ -59,7 +59,12 @@ export async function updateLoan(
       method: "PATCH",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        ...data,
+        ...(data.interestRate !== undefined && {
+          interestRate: data.interestRate / 100,
+        }),
+      }),
     });
   } catch {
     throw new Error("Ocurrió un error inesperado.");

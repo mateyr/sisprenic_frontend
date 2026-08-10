@@ -131,7 +131,7 @@ function LoanEditForm({
       if (value.principal !== originalValues.principal)
         diff.principal = value.principal;
       if (value.interestRate !== originalValues.interestRate)
-        diff.interestRate = value.interestRate / 100;
+        diff.interestRate = value.interestRate;
       if (value.termMonths !== originalValues.termMonths)
         diff.termMonths = value.termMonths;
       if (value.startDate !== originalValues.startDate)
