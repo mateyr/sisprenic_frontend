@@ -32,7 +32,6 @@ export function LoginForm({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // TODO: Render the <RouterProvider /> until the fetch has completed
   async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);

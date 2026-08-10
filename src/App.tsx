@@ -1,3 +1,4 @@
+import { IconLoader2 } from "@tabler/icons-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import "./App.css";
@@ -35,6 +36,15 @@ const router = createRouter({
 
 function InnerApp() {
   const auth = useAuth();
+
+  if (auth.isPending) {
+    return (
+      <div className="flex h-svh items-center justify-center">
+        <IconLoader2 className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return <RouterProvider router={router} context={{ auth }} />;
 }
 

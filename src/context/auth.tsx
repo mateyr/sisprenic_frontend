@@ -1,4 +1,5 @@
 import { AUTH_EXPIRED_EVENT } from "@/lib/http";
+import { queryKeys } from "@/lib/query-keys";
 import {
   getMe,
   loginRequest,
@@ -8,6 +9,7 @@ import type {
   AuthContext,
   UserInfo,
 } from "@/modules/authentication/types/user-types";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
   useCallback,
@@ -40,53 +42,59 @@ function setStoredUser(user: UserInfo | null): void {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserInfo | null>(getStoredUser);
+  const queryClient = useQueryClient();
+  const meQueryKey = queryKeys.auth.me();
+
+  const [hasStoredUser] = useState(() => !!getStoredUser());
+
+  const meQuery = useQuery({
+    queryKey: meQueryKey,
+    queryFn: getMe,
+    enabled: hasStoredUser,
+    retry: false,
+    staleTime: Infinity,
+  });
+
+  const user = meQuery.data ?? null;
   const isAuthenticated = !!user;
-
-  const login = useCallback(async (userName: string, password: string) => {
-    await loginRequest(userName, password);
-    const userInfo = await getMe();
-    // Flush synchronously so the router's context (fed via the `context`
-    // prop on RouterProvider) is updated before the caller runs
-    // router.invalidate()/navigate() right after login() resolves.
-    flushSync(() => {
-      setUser(userInfo);
-    });
-    setStoredUser(userInfo);
-    return userInfo;
-  }, []);
-
-  const logout = useCallback(async () => {
-    setUser(null);
-    setStoredUser(null);
-    await logoutRequest();
-  }, []);
+  const isPending = hasStoredUser && meQuery.isPending;
 
   useEffect(() => {
-    if (!getStoredUser()) return;
+    if (!hasStoredUser) return;
+    if (meQuery.isSuccess) {
+      setStoredUser(meQuery.data);
+    } else if (meQuery.isError) {
+      setStoredUser(null);
+    }
+  }, [hasStoredUser, meQuery.isSuccess, meQuery.isError, meQuery.data]);
 
-    let cancelled = false;
-
-    getMe()
-      .then((userInfo) => {
-        if (cancelled) return;
-        setUser(userInfo);
-        setStoredUser(userInfo);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setUser(null);
-        setStoredUser(null);
+  const login = useCallback(
+    async (userName: string, password: string) => {
+      await loginRequest(userName, password);
+      const userInfo = await getMe();
+      // Flush synchronously so the router's context (fed via the `context`
+      // prop on RouterProvider) is updated before the caller runs
+      // router.invalidate()/navigate() right after login() resolves.
+      flushSync(() => {
+        queryClient.setQueryData(meQueryKey, userInfo);
       });
+      setStoredUser(userInfo);
+      return userInfo;
+    },
+    [queryClient, meQueryKey],
+  );
 
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const logout = useCallback(async () => {
+    flushSync(() => {
+      queryClient.setQueryData(meQueryKey, null);
+    });
+    setStoredUser(null);
+    await logoutRequest();
+  }, [queryClient, meQueryKey]);
 
   useEffect(() => {
     function handleSessionExpired() {
-      setUser(null);
+      queryClient.setQueryData(meQueryKey, null);
       setStoredUser(null);
       if (window.location.pathname !== "/") {
         window.location.href = "/";
@@ -96,10 +104,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener(AUTH_EXPIRED_EVENT, handleSessionExpired);
     return () =>
       window.removeEventListener(AUTH_EXPIRED_EVENT, handleSessionExpired);
-  }, []);
+  }, [queryClient, meQueryKey]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider
+      value={{ isAuthenticated, isPending, user, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

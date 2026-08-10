@@ -1,4 +1,7 @@
 export const queryKeys = {
+  auth: {
+    me: () => ["auth", "me"] as const,
+  },
   loans: {
     all: () => ["loans"] as const,
     detail: (id: number) => ["loans", id] as const,
