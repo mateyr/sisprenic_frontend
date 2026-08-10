@@ -1,4 +1,4 @@
-import { throwApiError } from "@/lib/api-errors";
+import { HttpError, throwApiError } from "@/lib/api-errors";
 import { API_BASE_URL } from "@/lib/env";
 import type {
   Client,
@@ -10,7 +10,7 @@ export async function getClients(): Promise<Client[]> {
   const response = await fetch(`${API_BASE_URL}/clients`);
 
   if (!response.ok) {
-    throw new Error("Error al obtener los clientes.");
+    throw new HttpError(response.status, "Error al obtener los clientes.");
   }
 
   return response.json() as Promise<Client[]>;
@@ -20,7 +20,7 @@ export async function getClient(id: number): Promise<ClientDetail> {
   const response = await fetch(`${API_BASE_URL}/clients/${id}`);
 
   if (!response.ok) {
-    throw new Error("Error al obtener el cliente.");
+    throw new HttpError(response.status, "Error al obtener el cliente.");
   }
 
   return response.json() as Promise<ClientDetail>;

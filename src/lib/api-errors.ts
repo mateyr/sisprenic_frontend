@@ -22,10 +22,24 @@
 
 export type FieldErrors = Record<string, readonly string[]>;
 
-export class ProblemDetailsError extends Error {
+/**
+ * Generic HTTP error carrying the response status, so callers (e.g. the
+ * QueryClient retry logic) can tell a permanent client error (4xx) apart
+ * from a transient server error (5xx) without re-parsing the response.
+ */
+export class HttpError extends Error {
+  public readonly status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "HttpError";
+    this.status = status;
+  }
+}
+
+export class ProblemDetailsError extends HttpError {
   public readonly fieldErrors: FieldErrors;
-  constructor(fieldErrors: FieldErrors) {
-    super("Validation failed");
+  constructor(status: number, fieldErrors: FieldErrors) {
+    super(status, "Validation failed");
 
     this.name = "ProblemDetailsError";
     this.fieldErrors = fieldErrors;
@@ -93,8 +107,8 @@ export async function throwApiError(
 
   const problems = parseFieldErrors(body);
   if (problems) {
-    throw new ProblemDetailsError(problems);
+    throw new ProblemDetailsError(response.status, problems);
   }
 
-  throw new Error(fallbackMessage);
+  throw new HttpError(response.status, fallbackMessage);
 }

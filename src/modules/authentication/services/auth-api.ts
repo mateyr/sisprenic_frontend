@@ -1,4 +1,4 @@
-import { throwApiError } from "@/lib/api-errors";
+import { HttpError, throwApiError } from "@/lib/api-errors";
 import { API_BASE_URL } from "@/lib/env";
 import type { UserInfo } from "../types/user-types";
 
@@ -44,7 +44,10 @@ export async function getMe(): Promise<UserInfo> {
   });
 
   if (!response.ok) {
-    throw new Error("No se pudo obtener la información del usuario.");
+    throw new HttpError(
+      response.status,
+      "No se pudo obtener la información del usuario.",
+    );
   }
 
   return response.json() as Promise<UserInfo>;

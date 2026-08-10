@@ -1,4 +1,4 @@
-import { throwApiError } from "@/lib/api-errors";
+import { HttpError, throwApiError } from "@/lib/api-errors";
 import { API_BASE_URL } from "@/lib/env";
 import type { ApiResponse } from "@/types/api-response-type";
 import type { Payment, PaymentFormData } from "../types/payment-types";
@@ -9,7 +9,7 @@ export async function getPayments(): Promise<Payment[]> {
   });
 
   if (!response.ok) {
-    throw new Error("Error al obtener los pagos.");
+    throw new HttpError(response.status, "Error al obtener los pagos.");
   }
 
   return response.json() as Promise<Payment[]>;
@@ -21,7 +21,7 @@ export async function getLoanPayments(loanId: number): Promise<Payment[]> {
   });
 
   if (!response.ok) {
-    throw new Error("Error al obtener los pagos.");
+    throw new HttpError(response.status, "Error al obtener los pagos.");
   }
 
   return response.json() as Promise<Payment[]>;

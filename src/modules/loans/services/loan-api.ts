@@ -1,4 +1,4 @@
-import { throwApiError } from "@/lib/api-errors";
+import { HttpError, throwApiError } from "@/lib/api-errors";
 import { API_BASE_URL } from "@/lib/env";
 import type { Loan, LoanFormData } from "../types/loan-types";
 
@@ -8,7 +8,7 @@ export async function getLoans(): Promise<Loan[]> {
   });
 
   if (!response.ok) {
-    throw new Error("Error al obtener los préstamos.");
+    throw new HttpError(response.status, "Error al obtener los préstamos.");
   }
 
   return response.json() as Promise<Loan[]>;
@@ -20,7 +20,7 @@ export async function getLoan(id: number): Promise<Loan> {
   });
 
   if (!response.ok) {
-    throw new Error("Error al obtener el préstamo.");
+    throw new HttpError(response.status, "Error al obtener el préstamo.");
   }
 
   return response.json() as Promise<Loan>;

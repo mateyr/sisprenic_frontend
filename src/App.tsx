@@ -2,10 +2,26 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import "./App.css";
 import { AuthProvider, useAuth } from "./context/auth";
+import { HttpError } from "./lib/api-errors";
 import { RouteErrorComponent } from "./routes/route-error-component";
 import { routeTree } from "./routes/routes";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // 4xx errors are permanent (bad request, not found, etc.) — retrying
+      // sends the same request and gets the same result. Only retry
+      // transient failures (network errors, 5xx) up to 3 times.
+      retry: (failureCount, error) => {
+        if (error instanceof HttpError && error.status < 500) return false;
+        return failureCount < 3;
+      },
+      // Avoid refetching on every mount/focus; data is considered fresh
+      // for 1 minute before a background refetch is triggered.
+      staleTime: 60 * 1000,
+    },
+  },
+});
 
 const router = createRouter({
   routeTree,
