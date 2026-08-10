@@ -39,6 +39,9 @@ export function useCreatePayment(loanId: number) {
       queryClient.invalidateQueries({
         queryKey: queryKeys.loans.detail(loanId),
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.payments.all(),
+      });
     },
   });
 }
@@ -50,10 +53,10 @@ export function useDeletePayment(loanId: number) {
     mutationFn: (paymentId: number) => deletePayment(paymentId),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.loans.payments(loanId),
+        queryKey: queryKeys.loans.detail(loanId),
       });
       queryClient.invalidateQueries({
-        queryKey: queryKeys.loans.detail(loanId),
+        queryKey: queryKeys.payments.all(),
       });
     },
   });

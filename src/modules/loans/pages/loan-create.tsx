@@ -16,13 +16,14 @@ import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { LoanSummary } from "../components/loan-summary";
-import { createLoan } from "../services/loan-api";
+import { useCreateLoan } from "../hooks/use-loans";
 import { loanFormSchema } from "../types/loan-types";
 
 export default function LoanCreate() {
   const navigate = useNavigate();
   const search = useSearch({ strict: false });
   const { clients, isLoading: clientsLoading } = useClients();
+  const createLoan = useCreateLoan();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm({
@@ -39,7 +40,7 @@ export default function LoanCreate() {
     onSubmit: async ({ value }) => {
       setSubmitError(null);
       try {
-        await createLoan(value);
+        await createLoan.mutateAsync(value);
         toast.success("Préstamo creado exitosamente.");
         navigate({ to: "/loans" });
       } catch (err) {
