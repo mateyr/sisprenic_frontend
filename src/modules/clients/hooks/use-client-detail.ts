@@ -1,28 +1,21 @@
-import { useCallback, useEffect, useState } from "react";
-import { getClientDetail } from "../services/client-api";
-import type { ClientDetail } from "../types/client-types";
+import { queryKeys } from "@/lib/query-keys";
+import { useQuery } from "@tanstack/react-query";
+import { getClient } from "../services/client-api";
 
 export function useClientDetail(id: number) {
-  const [client, setClient] = useState<ClientDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.clients.detail(id),
+    queryFn: () => getClient(id),
+  });
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await getClientDetail(id);
-      setClient(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  return { client, isLoading, error };
+  return {
+    client: data ?? null,
+    isLoading,
+    error:
+      error instanceof Error
+        ? error.message
+        : error
+          ? "Error desconocido"
+          : null,
+  };
 }

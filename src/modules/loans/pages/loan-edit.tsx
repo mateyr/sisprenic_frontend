@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProblemDetailsError } from "@/lib/api-errors";
 import { useClients } from "@/modules/clients/hooks/use-clients";
-import { getFullName } from "@/modules/clients/types/client-types";
+import { getFullName, type Client } from "@/modules/clients/types/client-types";
 import { IconArrowLeft, IconX } from "@tabler/icons-react";
 import { useForm } from "@tanstack/react-form";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
@@ -89,15 +89,7 @@ function LoanEditForm({
   onSuccess,
 }: {
   loan: Loan;
-  clients: {
-    id: number;
-    firstName: string;
-    secondName: string;
-    lastName: string;
-    secondLastName: string;
-    identification: string;
-    phoneNumber: string;
-  }[];
+  clients: Client[];
   clientsLoading: boolean;
   onSuccess: () => void;
 }) {

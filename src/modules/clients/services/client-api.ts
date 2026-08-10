@@ -7,9 +7,7 @@ import type {
 } from "../types/client-types";
 
 export async function getClients(): Promise<Client[]> {
-  const response = await fetch(`${API_BASE_URL}/clients`, {
-    credentials: "include",
-  });
+  const response = await fetch(`${API_BASE_URL}/clients`);
 
   if (!response.ok) {
     throw new Error("Error al obtener los clientes.");
@@ -18,22 +16,8 @@ export async function getClients(): Promise<Client[]> {
   return response.json() as Promise<Client[]>;
 }
 
-export async function getClient(id: number): Promise<Client> {
-  const response = await fetch(`${API_BASE_URL}/clients/${id}`, {
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new Error("Error al obtener el cliente.");
-  }
-
-  return response.json() as Promise<Client>;
-}
-
-export async function getClientDetail(id: number): Promise<ClientDetail> {
-  const response = await fetch(`${API_BASE_URL}/clients/${id}`, {
-    credentials: "include",
-  });
+export async function getClient(id: number): Promise<ClientDetail> {
+  const response = await fetch(`${API_BASE_URL}/clients/${id}`);
 
   if (!response.ok) {
     throw new Error("Error al obtener el cliente.");
@@ -47,7 +31,6 @@ export async function createClient(data: ClientPayload): Promise<Client> {
   try {
     response = await fetch(`${API_BASE_URL}/clients`, {
       method: "POST",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
@@ -70,7 +53,6 @@ export async function updateClient(
   try {
     response = await fetch(`${API_BASE_URL}/clients/${id}`, {
       method: "PATCH",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
@@ -88,7 +70,6 @@ export async function deleteClient(id: number): Promise<void> {
   try {
     response = await fetch(`${API_BASE_URL}/clients/${id}`, {
       method: "DELETE",
-      credentials: "include",
     });
   } catch {
     throw new Error("Ocurrió un error inesperado.");
