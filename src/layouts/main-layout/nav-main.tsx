@@ -20,25 +20,11 @@ import {
 import type { MenuItem } from "@/modules/authentication/types/user-types";
 import { getIcon } from "@/lib/icon-map";
 
-// TODO: Change to Map.groupBy 
-// const menuBySection = Map.groupBy(items, item => item.section)
-function groupBySection(items: MenuItem[]): Map<string, MenuItem[]> {
-  const groups = new Map<string, MenuItem[]>();
-  for (const item of items) {
-    const section = item.section;
-    if (!groups.has(section)) {
-      groups.set(section, []);
-    }
-    groups.get(section)!.push(item);
-  }
-  return groups;
-}
-
 // TODO: Make menu rendering recursive
 export function NavMain({ items }: { items: MenuItem[] }) {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
-  const sections = groupBySection(items);
+  const sections = Map.groupBy(items, (item) => item.section);
   return (
     <>
       {Array.from(sections.entries()).map(([menuSection, menuItems]) => (
